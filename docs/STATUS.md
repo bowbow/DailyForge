@@ -1,9 +1,9 @@
 # Build status
 
 - Last updated: 2026-10-30
-- Active milestone: Extended Autonomous Run 1 — Stage B
-- State: Stage A complete; counter challenge implementation in progress
-- Last stable checkpoint: Runnable React/Vite shell and Fastify health API
+- Active milestone: Extended Autonomous Run 1 — Stage C
+- State: Stages A and B complete; broader challenge catalog in progress
+- Last stable checkpoint: Complete counter-challenge vertical slice
 
 ## What works now
 
@@ -11,7 +11,12 @@
 - React/Vite shell with Today, Wall, History, and Settings views.
 - Responsive desktop/sidebar and phone/bottom-navigation styles.
 - Fastify health endpoint proxied through the web development server.
-- Shared challenge-category domain types and validated health contract.
+- Pure domain model for accepting, incrementing, and completing counter
+  challenges with idempotent progress events.
+- Validated API contracts and in-memory application store for today's
+  challenge, streak, wall, history, and development reset.
+- Working 20-push-up flow from acceptance through private wall entry.
+- Server-authoritative streak and immutable wall-entry snapshots.
 - Canonical development and quality commands.
 
 ## Verification
@@ -27,10 +32,10 @@
 - AWS STS authentication and read-only EC2, S3, ECR, Route 53, and CloudWatch
   probes succeeded in us-east-1.
 - Ports 3000, 4173, 5173, and 5432 were available during the audit.
-- The complete Stage A gate passes: formatting, lint, type checking, one API
-  integration test, and production web build.
-- Live browser verification confirmed the API health indicator and primary view
-  navigation.
+- The complete Stage B gate passes: formatting, lint, type checking, four pure
+  domain tests, three API integration tests, and production web build.
+- Live browser verification completed the full accept, four-increment,
+  completion, streak, and private-wall journey.
 
 ## Current assumptions
 
@@ -61,12 +66,12 @@ Later-phase blockers:
 
 ## Exact next action
 
-Execute Stage B:
+Execute Stage C:
 
-1. Model counter progress, idempotent event recording, completion, streak, and
-   wall-entry creation in the pure domain.
-2. Add in-memory application repositories and validated API commands.
-3. Replace the preview card with the working accept, increment, and complete
-   flow.
-4. Render the resulting private wall entry and streak.
-5. Add domain, API, and browser coverage, then continue to Stage C.
+1. Expand the seeded catalog across Body, Character, Community, and Creativity.
+2. Add appropriate tracking policies for one-time acts, checklists, and timed
+   practices while keeping running training out of scope.
+3. Add safe challenge replacement and optional completion reflection.
+4. Add wall filtering and richer history summaries.
+5. Add browser automation and mobile-responsive coverage, then continue to the
+   quality stage.

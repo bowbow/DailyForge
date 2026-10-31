@@ -1,7 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { healthResponseSchema, type HealthResponse } from '@daily-forge/contracts';
+import {
+  type GoodnessEntryResponse,
+  type HistoryResponse,
+  type TodayResponse,
+} from '@daily-forge/contracts';
 import { challengeCategories, type ChallengeCategory } from '@daily-forge/domain';
+
+import {
+  acceptToday,
+  addCountProgress,
+  completeToday,
+  loadHistory,
+  loadToday,
+  loadWall,
+  resetDevelopmentData,
+} from './api';
 
 type View = 'today' | 'wall' | 'history' | 'settings';
 
@@ -19,100 +33,286 @@ const categoryCopy: Record<ChallengeCategory, string> = {
   creativity: 'Brief constraints and experiments for an artistic practice.',
 };
 
-async function fetchHealth(signal: AbortSignal): Promise<HealthResponse> {
-  const response = await fetch('/api/v1/health', { signal });
-  if (!response.ok) {
-    throw new Error('Health request failed with ' + response.status);
-  }
-  return healthResponseSchema.parse(await response.json());
+function formatLocalDate(localDate: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(localDate + 'T00:00:00.000Z'));
 }
 
-function TodayView() {
+interface TodayViewProps {
+  today: TodayResponse;
+  pending: boolean;
+  onAccept: () => Promise<void>;
+  onAdd: (amount: number) => Promise<void>;
+  onComplete: () => Promise<void>;
+  onViewWall: () => void;
+}
+
+function TodayView({ today, pending, onAccept, onAdd, onComplete, onViewWall }: TodayViewProps) {
+  const { assignment, progress, streak } = today;
+  const challenge = assignment.challenge;
+  const percent = Math.min(100, Math.round((progress.current / progress.target) * 100));
+
   return (
     <>
       <header className="page-heading">
-        <p className="eyebrow">Your daily practice</p>
-        <h1>One deliberate action.</h1>
+        <p className="eyebrow">{formatLocalDate(assignment.localDate)}</p>
+        <h1>
+          {assignment.status === 'completed' ? 'Action, recorded.' : 'One deliberate action.'}
+        </h1>
         <p className="lede">
-          Your first challenge will appear here. It will be clear, achievable, and yours to accept
-          or replace.
+          {assignment.status === 'completed'
+            ? 'This challenge is now part of your private Wall of Goodness.'
+            : 'A small, concrete challenge that supports the person you are working to become.'}
         </p>
       </header>
 
-      <article className="challenge-card challenge-card--preview">
+      <article className="challenge-card">
         <div className="challenge-card__topline">
-          <span className="category-pill">Body</span>
-          <span className="effort-label">About 3 minutes</span>
+          <span className={'category-pill category-pill--' + challenge.category}>
+            {challenge.category}
+          </span>
+          <span className="effort-label">About {challenge.expectedMinutes} minutes</span>
         </div>
+
         <div>
-          <p className="challenge-number">Challenge preview</p>
-          <h2>Accumulate 20 push-ups today</h2>
-          <p>
-            Use any safe variation that suits you. Break the total into as many small sets as you
-            like.
+          <p className="challenge-number">
+            {assignment.status === 'proposed' && 'Today’s challenge'}
+            {assignment.status === 'accepted' && 'Challenge in progress'}
+            {assignment.status === 'completed' && 'Challenge complete'}
           </p>
+          <h2>{challenge.title}</h2>
+          <p>{challenge.instructions}</p>
+          {challenge.safetyNote && <p className="safety-note">{challenge.safetyNote}</p>}
         </div>
-        <div className="preview-progress" aria-label="Preview progress: zero of twenty">
-          <span>0</span>
-          <div className="progress-track" aria-hidden="true">
-            <div className="progress-fill" />
+
+        <div className="progress-block">
+          <div className="progress-copy" aria-live="polite">
+            <strong>{progress.current}</strong>
+            <span>of {progress.target}</span>
           </div>
-          <span>20</span>
+          <div
+            aria-label={progress.current + ' of ' + progress.target + ' ' + challenge.tracking.unit}
+            aria-valuemax={progress.target}
+            aria-valuemin={0}
+            aria-valuenow={progress.current}
+            className="progress-track"
+            role="progressbar"
+          >
+            <div className="progress-fill" style={{ width: percent + '%' }} />
+          </div>
         </div>
-        <button className="primary-button" type="button" disabled>
-          Available in the next checkpoint
-        </button>
+
+        {assignment.status === 'proposed' && (
+          <button
+            className="primary-button"
+            disabled={pending}
+            onClick={() => void onAccept()}
+            type="button"
+          >
+            {pending ? 'Accepting…' : 'Accept today’s challenge'}
+          </button>
+        )}
+
+        {assignment.status === 'accepted' && (
+          <div className="action-stack">
+            <div className="increment-row" aria-label="Add push-up progress">
+              <button disabled={pending} onClick={() => void onAdd(1)} type="button">
+                +1
+              </button>
+              <button disabled={pending} onClick={() => void onAdd(5)} type="button">
+                +5
+              </button>
+            </div>
+            <button
+              className="primary-button"
+              disabled={pending || progress.current < progress.target}
+              onClick={() => void onComplete()}
+              type="button"
+            >
+              {progress.current < progress.target
+                ? progress.target - progress.current + ' remaining'
+                : pending
+                  ? 'Completing…'
+                  : 'Complete challenge'}
+            </button>
+          </div>
+        )}
+
+        {assignment.status === 'completed' && (
+          <div className="completion-panel">
+            <div>
+              <span className="completion-check" aria-hidden="true">
+                ✓
+              </span>
+              <p>
+                <strong>{streak.current} day of deliberate action</strong>
+                <small>{streak.lifetimeCompletions} challenge completed in total</small>
+              </p>
+            </div>
+            <button className="secondary-button" onClick={onViewWall} type="button">
+              View your wall
+            </button>
+          </div>
+        )}
       </article>
     </>
   );
 }
 
-function PlaceholderView({ view }: { view: Exclude<View, 'today'> }) {
-  const content = {
-    wall: {
-      eyebrow: 'Private by design',
-      title: 'Your Wall of Goodness',
-      body: 'Completed challenges and reflections will collect here as evidence of deliberate action.',
-    },
-    history: {
-      eyebrow: 'Patterns, not pressure',
-      title: 'Your practice over time',
-      body: 'See completed days, category balance, and streaks without comparison or ranking.',
-    },
-    settings: {
-      eyebrow: 'Make it suitable',
-      title: 'Preferences and safety',
-      body: 'Choose challenge categories, physical constraints, reminders, and privacy controls.',
-    },
-  }[view];
-
+function WallView({ entries }: { entries: GoodnessEntryResponse[] }) {
   return (
-    <header className="page-heading">
-      <p className="eyebrow">{content.eyebrow}</p>
-      <h1>{content.title}</h1>
-      <p className="lede">{content.body}</p>
-      <div className="empty-state" role="status">
-        This space is ready for the next vertical slice.
+    <>
+      <header className="page-heading">
+        <p className="eyebrow">Private by design</p>
+        <h1>Your Wall of Goodness</h1>
+        <p className="lede">
+          A private record of the constructive actions you have completed—not a social feed.
+        </p>
+      </header>
+
+      {entries.length === 0 ? (
+        <div className="empty-state" role="status">
+          Complete a challenge and it will appear here.
+        </div>
+      ) : (
+        <div className="wall-list">
+          {entries.map((entry) => (
+            <article className="wall-card" key={entry.id}>
+              <div className="wall-card__meta">
+                <span className={'category-dot category-dot--' + entry.category} />
+                <span>{entry.category}</span>
+                <span aria-hidden="true">·</span>
+                <time dateTime={entry.localDate}>{formatLocalDate(entry.localDate)}</time>
+              </div>
+              <h2>{entry.challengeTitle}</h2>
+              <p className="wall-result">{entry.result}</p>
+              {entry.reflection && <blockquote>{entry.reflection}</blockquote>}
+              <p className="quality-line">Practiced: {entry.practicedQualities.join(', ')}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function HistoryView({ history }: { history: HistoryResponse | null }) {
+  const streak = history?.streak ?? {
+    current: 0,
+    longest: 0,
+    lifetimeCompletions: 0,
+  };
+  return (
+    <>
+      <header className="page-heading">
+        <p className="eyebrow">Patterns, not pressure</p>
+        <h1>Your practice over time</h1>
+        <p className="lede">Consistency is useful evidence, never a measure of your worth.</p>
+      </header>
+      <div className="stat-grid">
+        <article>
+          <strong>{streak.current}</strong>
+          <span>Current streak</span>
+        </article>
+        <article>
+          <strong>{streak.longest}</strong>
+          <span>Longest streak</span>
+        </article>
+        <article>
+          <strong>{streak.lifetimeCompletions}</strong>
+          <span>Lifetime actions</span>
+        </article>
       </div>
-    </header>
+    </>
+  );
+}
+
+function SettingsView({ pending, onReset }: { pending: boolean; onReset: () => Promise<void> }) {
+  return (
+    <>
+      <header className="page-heading">
+        <p className="eyebrow">Development workspace</p>
+        <h1>Preferences and safety</h1>
+        <p className="lede">
+          Production preferences will arrive in a later stage. Current data is fictional, in-memory,
+          and resettable.
+        </p>
+      </header>
+      <div className="settings-card">
+        <div>
+          <strong>Reset development data</strong>
+          <p>Return today’s challenge, streak, and wall to their initial state.</p>
+        </div>
+        <button
+          className="secondary-button"
+          disabled={pending}
+          onClick={() => void onReset()}
+          type="button"
+        >
+          {pending ? 'Resetting…' : 'Reset'}
+        </button>
+      </div>
+    </>
   );
 }
 
 export function App() {
   const [view, setView] = useState<View>('today');
-  const [health, setHealth] = useState<'checking' | 'ready' | 'unavailable'>('checking');
+  const [today, setToday] = useState<TodayResponse | null>(null);
+  const [wallEntries, setWallEntries] = useState<GoodnessEntryResponse[]>([]);
+  const [history, setHistory] = useState<HistoryResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshSecondaryData = useCallback(async () => {
+    const [wall, nextHistory] = await Promise.all([loadWall(), loadHistory()]);
+    setWallEntries(wall.entries);
+    setHistory(nextHistory);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
-    void fetchHealth(controller.signal)
-      .then(() => setHealth('ready'))
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          setHealth('unavailable');
+    void Promise.all([
+      loadToday(controller.signal),
+      loadWall(controller.signal),
+      loadHistory(controller.signal),
+    ])
+      .then(([nextToday, wall, nextHistory]) => {
+        setToday(nextToday);
+        setWallEntries(wall.entries);
+        setHistory(nextHistory);
+      })
+      .catch((caught: unknown) => {
+        if (!(caught instanceof DOMException && caught.name === 'AbortError')) {
+          setError(caught instanceof Error ? caught.message : 'Daily Forge could not load.');
         }
-      });
+      })
+      .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
+
+  async function runAction(action: () => Promise<TodayResponse>, refresh = false) {
+    setPending(true);
+    setError(null);
+    try {
+      setToday(await action());
+      if (refresh) {
+        await refreshSecondaryData();
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Daily Forge could not save progress.');
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function reset() {
+    await runAction(resetDevelopmentData, true);
+    setView('today');
+  }
 
   return (
     <div className="app-shell">
@@ -162,17 +362,35 @@ export function App() {
           ))}
         </div>
 
-        <div className={'health health--' + health} role="status">
+        <div className="health health--ready" role="status">
           <span aria-hidden="true" />
-          {health === 'checking' && 'Checking local API'}
-          {health === 'ready' && 'Local API ready'}
-          {health === 'unavailable' && 'Local API unavailable'}
+          Development data · in memory
         </div>
       </aside>
 
       <main id="main-content">
         <div className="content-frame">
-          {view === 'today' ? <TodayView /> : <PlaceholderView view={view} />}
+          {error && (
+            <div className="error-banner" role="alert">
+              {error}
+            </div>
+          )}
+          {loading && <div className="loading-state">Preparing today’s challenge…</div>}
+          {!loading && today && view === 'today' && (
+            <TodayView
+              onAccept={() => runAction(acceptToday)}
+              onAdd={(amount) => runAction(() => addCountProgress(today.assignment.id, amount))}
+              onComplete={() => runAction(() => completeToday(today.assignment.id), true)}
+              onViewWall={() => {
+                setView('wall');
+              }}
+              pending={pending}
+              today={today}
+            />
+          )}
+          {!loading && view === 'wall' && <WallView entries={wallEntries} />}
+          {!loading && view === 'history' && <HistoryView history={history} />}
+          {!loading && view === 'settings' && <SettingsView onReset={reset} pending={pending} />}
         </div>
       </main>
 
