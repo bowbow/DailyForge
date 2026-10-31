@@ -91,7 +91,7 @@ record under docs/decisions/.
 
 The architecture anticipates this layout once implementation begins:
 
-~~~text
+```text
 apps/
   web/       responsive installable PWA
   api/       authenticated HTTP API
@@ -106,7 +106,7 @@ infrastructure/
     environments/production/
     modules/
 docs/
-~~~
+```
 
 Do not create all directories speculatively. Add them when the corresponding
 phase begins and keep this section aligned with the actual repository.
@@ -130,9 +130,19 @@ phase begins and keep this section aligned with the actual repository.
 - Do not commit generated build output, local databases, Terraform state,
   plan files, credentials, environment files, or exported private wall data.
 
-There are no canonical build commands yet. When project tooling is introduced,
-document the exact install, format, lint, type-check, test, local-run, build, and
-database-migration commands here and in README.md in the same change.
+Canonical commands:
+
+- pnpm install — install the pinned workspace.
+- pnpm dev — run the API and web development processes.
+- pnpm format and pnpm format:check — write or verify formatting.
+- pnpm lint — run ESLint.
+- pnpm typecheck — check every workspace package.
+- pnpm test — run workspace tests.
+- pnpm build — produce the web build and verify server/package compilation.
+- pnpm check — run the complete pre-checkpoint gate.
+
+Document database-migration commands here and in README.md when durable
+persistence is introduced.
 
 ## Runnable-first delivery
 

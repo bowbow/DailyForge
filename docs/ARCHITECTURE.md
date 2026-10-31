@@ -12,7 +12,7 @@
 
 ## System context
 
-~~~text
+```text
 ┌───────────────────────────────┐
 │ Pixel 6 or desktop browser    │
 │                               │
@@ -32,7 +32,7 @@
         ▼                ▼
    PostgreSQL       Approved volunteer
    database         provider APIs/sites
-~~~
+```
 
 ## Logical layers
 
@@ -96,7 +96,7 @@ remains authoritative for durable assignment, completion, and streak state.
 
 ## Anticipated code organization
 
-~~~text
+```text
 apps/
   web/
   api/
@@ -108,7 +108,7 @@ packages/
 infrastructure/
   terraform/
 docs/
-~~~
+```
 
 The exact workspace manager, frontend framework, HTTP framework, validation
 library, ORM/query layer, and test runner remain open decisions. The intended
@@ -121,7 +121,7 @@ generic table updates.
 
 Illustrative endpoints:
 
-~~~text
+```text
 GET    /api/v1/today
 POST   /api/v1/today/accept
 POST   /api/v1/today/replace
@@ -132,7 +132,7 @@ GET    /api/v1/wall
 GET    /api/v1/history
 GET    /api/v1/export
 DELETE /api/v1/account
-~~~
+```
 
 These names are design examples, not a frozen contract.
 

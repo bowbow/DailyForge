@@ -21,7 +21,7 @@ discussion for current direction.
 
 ## Template
 
-~~~markdown
+```markdown
 # NNNN — Decision title
 
 - Status: Proposed
@@ -42,7 +42,7 @@ What becomes easier, harder, required, or unavailable?
 ## Alternatives considered
 
 What meaningful alternatives were evaluated?
-~~~
+```
 
 After a record is accepted, do not rewrite the decision. Add clarifying notes or
 create a new record that supersedes it.

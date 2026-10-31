@@ -34,7 +34,7 @@ After acceptance, the card exposes the appropriate tracker.
 
 ### Counter example
 
-~~~text
+```text
 Accumulate 20 push-ups today
 
 12 / 20
@@ -42,13 +42,13 @@ Accumulate 20 push-ups today
 
 8:20 AM   +5
 1:10 PM   +7
-~~~
+```
 
 Suitable variations should be visible without framing them as failure.
 
 ### Written-account example
 
-~~~text
+```text
 Offer useful help to one person today
 
 What did you do?
@@ -58,7 +58,7 @@ What did you notice? (optional)
 [                                               ]
 
 [ Complete challenge ]
-~~~
+```
 
 The app should remind the user not to include names or sensitive details about
 another person.
@@ -100,7 +100,7 @@ not contain social metrics.
 
 A card may show:
 
-~~~text
+```text
 Community · November 3
 
 Offered practical help
@@ -109,7 +109,7 @@ I noticed a visitor looking confused and walked with them to the correct
 building.
 
 Practiced: attentiveness and generosity
-~~~
+```
 
 Views:
 

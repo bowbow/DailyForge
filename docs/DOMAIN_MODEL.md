@@ -5,7 +5,7 @@
 The domain centers on a daily assignment, immutable progress events, completion,
 and a historical Wall of Goodness entry.
 
-~~~text
+```text
 ChallengeDefinition
         │ selected for a user and local date
         ▼
@@ -16,7 +16,7 @@ Completion ───────────── StreakState
         │
         ▼
 GoodnessEntry
-~~~
+```
 
 ## Core entities
 
@@ -194,7 +194,7 @@ complex scoring system. Personalization must not infer medical or moral traits.
 
 ## Example flow
 
-~~~text
+```text
 Definition:
   "Accumulate 20 push-ups today"
   policy = CounterAtLeast(20)
@@ -214,4 +214,4 @@ Completion transaction:
   assignment completed
   streak advanced
   wall snapshot created
-~~~
+```

@@ -17,7 +17,7 @@ or AWS before validating the interaction.
 
 Build in this order:
 
-~~~text
+```text
 Runnable in-memory challenge loop
               ↓
 Durable PostgreSQL challenge loop
@@ -29,7 +29,7 @@ Offline PWA and authentication/privacy readiness
 AWS deployment
               ↓
 Volunteer providers
-~~~
+```
 
 Each slice should leave behind tests that make the next adapter replacement
 safe.

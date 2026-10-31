@@ -1,20 +1,18 @@
 # Build status
 
 - Last updated: 2026-10-30
-- Active milestone: Milestone 1 — Runnable local application
-- State: Ready to begin
-- Last stable checkpoint: Product, architecture, build plan, and agent guidance
-  documented
+- Active milestone: Extended Autonomous Run 1 — Stage B
+- State: Stage A complete; counter challenge implementation in progress
+- Last stable checkpoint: Runnable React/Vite shell and Fastify health API
 
 ## What works now
 
-- Product and UX behavior are documented.
-- Application, domain, privacy, and AWS architecture are documented.
-- The PWA, private wall, shared-domain, EC2/Elastic IP, and initial TypeScript
-  stack decisions are recorded.
-- The executable build order and unattended-work boundaries are defined.
-
-No application process exists yet.
+- pnpm workspace with web, API, domain, and contract packages.
+- React/Vite shell with Today, Wall, History, and Settings views.
+- Responsive desktop/sidebar and phone/bottom-navigation styles.
+- Fastify health endpoint proxied through the web development server.
+- Shared challenge-category domain types and validated health contract.
+- Canonical development and quality commands.
 
 ## Verification
 
@@ -29,7 +27,10 @@ No application process exists yet.
 - AWS STS authentication and read-only EC2, S3, ECR, Route 53, and CloudWatch
   probes succeeded in us-east-1.
 - Ports 3000, 4173, 5173, and 5432 were available during the audit.
-- No application tests exist yet.
+- The complete Stage A gate passes: formatting, lint, type checking, one API
+  integration test, and production web build.
+- Live browser verification confirmed the API health indicator and primary view
+  navigation.
 
 ## Current assumptions
 
@@ -60,11 +61,12 @@ Later-phase blockers:
 
 ## Exact next action
 
-Execute Extended Autonomous Run 1, beginning with Milestone 1A:
+Execute Stage B:
 
-1. Scaffold the pnpm workspace and shared TypeScript configuration.
-2. Create the React/Vite web shell and Fastify health endpoint.
-3. Add canonical format, lint, type-check, test, build, and development commands.
-4. Verify the shell at phone and desktop widths.
-5. Update this file with results, then continue through the ordered ladder in
-   BUILD_PLAN.md without stopping at the first successful milestone.
+1. Model counter progress, idempotent event recording, completion, streak, and
+   wall-entry creation in the pure domain.
+2. Add in-memory application repositories and validated API commands.
+3. Replace the preview card with the working accept, increment, and complete
+   flow.
+4. Render the resulting private wall entry and streak.
+5. Add domain, API, and browser coverage, then continue to Stage C.

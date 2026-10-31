@@ -1,0 +1,21 @@
+{
+  "name": "@daily-forge/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@daily-forge/contracts": "workspace:*",
+    "@daily-forge/domain": "workspace:*",
+    "fastify": "5.12.7"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}

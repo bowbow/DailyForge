@@ -53,6 +53,38 @@ Instructions for coding agents are in [AGENTS.md](AGENTS.md).
 - TypeScript workspace using pnpm, React and Vite, Fastify, Zod, Vitest,
   Playwright, PostgreSQL, Docker Compose, and Terraform.
 
+## Local development
+
+Prerequisites:
+
+- Node.js 24 or newer.
+- pnpm 11.25 or a compatible version selected by the packageManager field.
+
+Install and run:
+
+```powershell
+pnpm install
+pnpm dev
+```
+
+The local application is available at http://127.0.0.1:5173 and proxies API
+requests to http://127.0.0.1:3000.
+
+Quality commands:
+
+```powershell
+pnpm format
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm check
+```
+
+The current development data is in memory and resets when the API process
+restarts.
+
 ## Important open choices
 
 See [the roadmap](docs/ROADMAP.md#open-product-and-technical-decisions) for the

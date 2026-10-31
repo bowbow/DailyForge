@@ -11,7 +11,7 @@
 
 ## Initial topology
 
-~~~text
+```text
 Route 53 domain
       │ A record
       ▼
@@ -30,7 +30,7 @@ EC2 instance
           │ scheduled logical backups
           ▼
       private S3 bucket
-~~~
+```
 
 This is a single-host design with a known availability limit. It is appropriate
 for the initial owner/pilot, not a claim of high availability.
@@ -87,7 +87,7 @@ populate secret values.
 
 ## Proposed layout
 
-~~~text
+```text
 infrastructure/terraform/
   bootstrap/
     main.tf
@@ -107,7 +107,7 @@ infrastructure/terraform/
       variables.tf
       outputs.tf
       production.tfvars.example
-~~~
+```
 
 Do not create a cloud development environment until there is a demonstrated
 need. Local containers are the initial development environment.
@@ -125,7 +125,7 @@ use it. The state bucket requires:
 
 The production backend uses S3-native locking:
 
-~~~hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "configured-during-bootstrap"
@@ -135,7 +135,7 @@ terraform {
     use_lockfile = true
   }
 }
-~~~
+```
 
 Backend values are supplied during initialization where appropriate. Do not
 commit account-specific credentials.
@@ -189,13 +189,13 @@ item.
 
 Infrastructure and application lifecycles are separate:
 
-~~~text
+```text
 Application pipeline:
   test → build image → push ECR → deploy through SSM → migrate → health check
 
 Infrastructure pipeline:
   format → validate → plan → review → explicitly approved apply
-~~~
+```
 
 An application release should not run Terraform merely to update a container
 tag. EC2 retrieves an approved image and restarts the relevant processes.
