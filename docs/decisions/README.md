@@ -10,6 +10,7 @@ discussion for current direction.
 - [0002 — Use a shared pure domain with ports and adapters](0002-shared-domain-and-ports.md)
 - [0003 — Provision the initial AWS host with Terraform and a durable Elastic IP](0003-terraform-ec2-elastic-ip.md)
 - [0004 — Keep the Wall of Goodness private](0004-private-wall-of-goodness.md)
+- [0005 — Adopt the initial TypeScript application stack](0005-typescript-application-stack.md)
 
 ## Status values
 

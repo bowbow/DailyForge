@@ -7,6 +7,7 @@
 - Safe EC2 replacement without releasing that address.
 - HTTPS, private persistence, backups, monitoring, and no inbound SSH.
 - A small initial footprint with a documented growth path.
+- Deliberate cost control with no surprise recurring infrastructure.
 
 ## Initial topology
 
@@ -33,6 +34,38 @@ EC2 instance
 
 This is a single-host design with a known availability limit. It is appropriate
 for the initial owner/pilot, not a claim of high availability.
+
+## Cost controls
+
+AWS access never implies authorization to create resources. Before every
+cost-producing apply:
+
+1. Produce the Terraform plan.
+2. List each created or enlarged resource.
+3. Check current official AWS pricing for the selected region.
+4. Separate predictable recurring costs from usage-dependent costs.
+5. Call out public IPv4, EBS, snapshots, S3, ECR, CloudWatch, DNS, backup, and
+   data-transfer charges.
+6. Present lower-cost alternatives and their tradeoffs.
+7. Obtain explicit user authorization.
+
+Initial cost principles:
+
+- Maintain one production environment and develop locally.
+- Select the smallest instance and storage allocation that satisfy measured
+  needs.
+- Avoid NAT Gateway, Application or Network Load Balancer, RDS, and duplicate
+  instances until availability or scale justifies them.
+- Add an AWS Budget and notifications before or alongside the first application
+  resources.
+- Use short, explicit retention for logs, snapshots, backups, and ECR images.
+- Detect unattached Elastic IPs and EBS volumes, which can continue to incur
+  costs without serving the application.
+- Tag supported resources with Project=DailyForge, the environment, and
+  ManagedBy=Terraform.
+
+Any temporary cost-bearing resource needs an owner, purpose, expected lifetime,
+and teardown step in the plan.
 
 ## Terraform ownership
 
@@ -215,8 +248,9 @@ For every infrastructure change:
 4. Produce a saved plan for the intended environment.
 5. Review replacements, deletions, IAM changes, public ingress, and cost-bearing
    resources.
-6. Apply only with explicit authorization.
-7. Verify health, backups, DNS, and monitoring.
+6. Review current expected cost and cheaper alternatives.
+7. Apply only with explicit authorization.
+8. Verify health, backups, DNS, monitoring, and budget visibility.
 
 Never commit:
 

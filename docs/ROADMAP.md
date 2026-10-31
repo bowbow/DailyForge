@@ -1,34 +1,45 @@
 # Implementation roadmap
 
-The roadmap favors a complete, testable walking skeleton over building many
-features in parallel.
+The roadmap favors a runnable vertical slice over building foundations in
+isolation. The detailed execution and unattended-work protocol are in
+[BUILD_PLAN.md](BUILD_PLAN.md).
 
-## Phase 0: Decisions and repository foundation
+## Phase 0: Minimum repository foundation
 
-- Confirm product name.
-- Select TypeScript runtime, workspace manager, frontend framework, API
-  framework, validation approach, database access layer, and test tools.
-- Record durable selections in ADRs.
+- Use the accepted stack in ADR 0005.
+- Select and lock compatible dependency versions.
 - Add formatting, linting, type checking, test, and dependency-update workflows.
 - Add Git ignore rules for application, private data, and Terraform artifacts.
 - Create local environment documentation.
 
-Exit condition: a new developer or agent can install dependencies, run checks,
-and start the empty web/API skeleton from documented commands.
+Exit condition: one documented command starts the web and API development
+processes, even before the product slice is complete.
 
-## Phase 1: Walking skeleton
+## Phase 1: Runnable challenge slice
 
 - Responsive PWA shell with Today, Wall, History, and Settings destinations.
 - API health endpoint.
-- PostgreSQL migration runner.
 - One fictional user in local development only.
 - Shared domain package imported by both web and API.
-- One hard-coded counter challenge flowing through API and database.
+- One seeded push-up counter challenge.
+- In-memory assignment, progress, completion, streak, and wall adapters.
+- Automated domain and core-flow tests.
 
-Exit condition: record increments, complete the challenge, and see one wall
-entry after a page reload.
+Exit condition: start the app locally, record increments, complete the challenge,
+and see the resulting wall entry. A restart may reset data at this phase.
 
-## Phase 2: Product MVP
+## Phase 2: Durable product core
+
+- PostgreSQL development service and migration runner.
+- Durable repositories replacing in-memory adapters without changing domain
+  behavior.
+- Reload and restart persistence.
+- Idempotent progress and completion commands.
+
+Exit condition: the Phase 1 flow survives browser and server restarts and cannot
+double-count a replayed progress event.
+
+## Phase 3: Product MVP
 
 - Versioned challenge catalog and four categories.
 - Counter, timer, checklist, and written-account tracking.
@@ -43,7 +54,7 @@ entry after a page reload.
 Exit condition: the owner can use the app for seven consecutive days without
 manual database intervention.
 
-## Phase 3: PWA resilience
+## Phase 4: PWA resilience
 
 - Install manifest and icons.
 - Service-worker application-shell caching.
@@ -56,7 +67,7 @@ manual database intervention.
 Exit condition: progress recorded during temporary network loss synchronizes
 once, without duplication or lost reflection text.
 
-## Phase 4: AWS infrastructure
+## Phase 5: AWS infrastructure
 
 - Terraform state bootstrap.
 - Production VPC, EC2, Elastic IP, DNS, IAM, ECR, EBS, S3 backups, and
@@ -70,7 +81,7 @@ once, without duplication or lost reflection text.
 Exit condition: a reviewed Terraform plan creates the environment, a separate
 application deployment publishes the PWA, and a restore exercise succeeds.
 
-## Phase 5: Privacy readiness
+## Phase 6: Privacy readiness
 
 - Data export.
 - Account and content deletion.
@@ -82,7 +93,7 @@ application deployment publishes the PWA, and a restore exercise succeeds.
 Exit condition: the system is suitable for inviting a small number of real
 users.
 
-## Phase 6: Volunteer opportunities
+## Phase 7: Volunteer opportunities
 
 - Approve initial sources and review their integration terms.
 - Implement provider interface and one adapter.
@@ -109,15 +120,14 @@ These require explicit decisions before their implementation phase:
 1. Final product name and visual identity.
 2. Initial owner-only versus small multi-user launch.
 3. Authentication method.
-4. Exact TypeScript frameworks and package manager.
-5. Database access and migration tooling.
-6. Initial challenge-selection algorithm.
-7. Grace-day or streak-freeze behavior.
-8. Behavior when a user deletes a wall entry.
-9. Time-zone change during an accepted challenge.
-10. Initial curated challenge library and review process.
-11. Approved volunteer sources.
-12. Whether creative artifacts are uploaded or remain device-local.
-13. AWS account, region, domain, instance size, and backup retention.
-14. Recovery objectives and threshold for moving PostgreSQL to RDS.
-15. Notification schedule, content, and opt-in behavior.
+4. Database access and migration tooling.
+5. Initial challenge-selection algorithm.
+6. Grace-day or streak-freeze behavior.
+7. Behavior when a user deletes a wall entry.
+8. Time-zone change during an accepted challenge.
+9. Initial curated challenge library and review process.
+10. Approved volunteer sources.
+11. Whether creative artifacts are uploaded or remain device-local.
+12. AWS account, region, domain, instance size, and backup retention.
+13. Recovery objectives and threshold for moving PostgreSQL to RDS.
+14. Notification schedule, content, and opt-in behavior.

@@ -17,10 +17,9 @@ system for assigning moral scores.
 
 ## Project status
 
-The repository is currently in the **product and architecture definition**
-phase. No application or infrastructure code has been selected or generated
-yet. Confirmed decisions and unresolved choices are documented rather than
-hidden in implementation assumptions.
+The repository has completed its initial **product and architecture definition**
+and is ready for a runnable-first implementation. Application and infrastructure
+code have not yet been generated.
 
 ## Start here
 
@@ -32,8 +31,10 @@ Read these documents in order:
 4. [Domain model](docs/DOMAIN_MODEL.md)
 5. [Security and privacy](docs/SECURITY_PRIVACY.md)
 6. [AWS and Terraform design](docs/INFRASTRUCTURE.md)
-7. [Implementation roadmap](docs/ROADMAP.md)
-8. [Architecture decision records](docs/decisions/README.md)
+7. [Executable build plan](docs/BUILD_PLAN.md)
+8. [Current build status](docs/STATUS.md)
+9. [Implementation roadmap](docs/ROADMAP.md)
+10. [Architecture decision records](docs/decisions/README.md)
 
 Instructions for coding agents are in [AGENTS.md](AGENTS.md).
 
@@ -49,10 +50,12 @@ Instructions for coding agents are in [AGENTS.md](AGENTS.md).
 - AWS deployment initially centered on one EC2 host and one durable Elastic IP.
 - Terraform for infrastructure provisioning and maintenance.
 - Application deployments kept separate from Terraform changes.
+- TypeScript workspace using pnpm, React and Vite, Fastify, Zod, Vitest,
+  Playwright, PostgreSQL, Docker Compose, and Terraform.
 
 ## Important open choices
 
 See [the roadmap](docs/ROADMAP.md#open-product-and-technical-decisions) for the
 current decision list. In particular, the final authentication method, AWS
-region and domain, volunteer sources, challenge library, and exact TypeScript
-frameworks have not yet been approved.
+region and domain, volunteer sources, challenge library, and database access
+tooling have not yet been approved.

@@ -33,8 +33,10 @@ Before making product, application, data, or infrastructure changes, read:
 5. docs/DOMAIN_MODEL.md
 6. docs/SECURITY_PRIVACY.md
 7. docs/INFRASTRUCTURE.md
-8. docs/ROADMAP.md
-9. Relevant records under docs/decisions/
+8. docs/BUILD_PLAN.md
+9. docs/STATUS.md
+10. docs/ROADMAP.md
+11. Relevant records under docs/decisions/
 
 Do not implement an unresolved decision as if it were approved. Make the
 smallest reversible choice needed to progress, label it clearly, and update the
@@ -111,8 +113,7 @@ phase begins and keep this section aligned with the actual repository.
 
 ## Development expectations
 
-- Prefer TypeScript for the web, API, worker, shared domain, and contracts unless
-  an approved ADR changes the language.
+- Use the accepted stack in ADR 0005 unless a superseding ADR changes it.
 - Keep dependency count modest and pin versions through the selected lockfile.
 - Do not introduce a framework, monorepo tool, ORM, authentication product, or
   validation library without recording the choice when it will constrain later
@@ -133,9 +134,69 @@ There are no canonical build commands yet. When project tooling is introduced,
 document the exact install, format, lint, type-check, test, local-run, build, and
 database-migration commands here and in README.md in the same change.
 
+## Runnable-first delivery
+
+- Optimize first for a real, interactable local application, not for completing
+  every production concern before anything can be seen.
+- Build vertical slices that cross UI, API, domain, and an adapter.
+- The first slice uses an in-memory development adapter so the Today-to-Wall
+  flow can run before PostgreSQL, authentication, offline sync, or AWS exists.
+- Keep the in-memory adapter behind the same ports as durable persistence. It is
+  a development accelerator, not the production database.
+- After a visible slice works, replace temporary adapters one boundary at a time
+  and preserve the behavior with tests.
+- Do not build volunteer integrations, Push, Terraform, or visual polish before
+  the core challenge loop runs locally unless the active milestone says so.
+
+## Prolonged and unattended work
+
+When the user authorizes a milestone for prolonged work:
+
+- Treat the milestone and its acceptance criteria in docs/BUILD_PLAN.md as the
+  working contract.
+- If the user authorizes an extended run, follow its ordered continuation ladder
+  after the first milestone completes. Do not stop merely because an early
+  checkpoint passed while safe authorized work remains.
+- Continue through safe, in-scope tasks without pausing for minor preferences.
+  Choose the smallest reversible default and record it in docs/STATUS.md.
+- If one task is blocked, work on another independent task in the same milestone
+  rather than stopping immediately.
+- Run the relevant checks after each meaningful vertical slice and before every
+  checkpoint.
+- Keep docs/STATUS.md current with completed work, verification results, current
+  problems, and the exact next action.
+- Preserve a runnable main path. Do not leave the application intentionally
+  broken between checkpoints.
+- Do not broaden the milestone merely because time remains. Complete tests,
+  accessibility, error states, and documentation before starting unrelated
+  features.
+- Stop for user input when a choice is costly, irreversible, privacy-sensitive,
+  externally visible, or would change the agreed product behavior.
+
+Unattended work does not authorize commits, pushes, AWS changes, production
+deployments, DNS changes, paid services, secret creation, external messages,
+volunteer-site scraping, or destructive operations. The user may explicitly
+grant commit and push permission for a particular prolonged run. Production and
+destructive actions always require their own explicit authorization.
+
 ## Infrastructure rules
 
 - Terraform manages infrastructure; it does not deploy application releases.
+- Treat every AWS resource as cost-bearing unless current official pricing proves
+  otherwise. Before an apply, summarize fixed, hourly, storage, public IPv4,
+  request, logging, backup, and data-transfer costs that could result.
+- AWS identity access does not imply permission to create resources. Every
+  Terraform apply or other cost-producing cloud mutation requires explicit user
+  authorization after plan and cost review.
+- Prefer the smallest practical single-environment design. Avoid NAT Gateway,
+  load balancers, managed databases, duplicate environments, and continuously
+  running resources until their value justifies their recurring cost.
+- Tag supported resources consistently with Project=DailyForge,
+  Environment=<environment>, and ManagedBy=Terraform so costs can be found and
+  attributed.
+- Include budget alerts and cost visibility in the first infrastructure plan.
+- Identify idle-cost risks such as unattached Elastic IPs, EBS volumes,
+  snapshots, retained logs, ECR images, and forgotten test infrastructure.
 - Use an S3 backend with encryption, versioning, public access blocked, and
   S3-native state locking.
 - Keep Terraform state and plan files out of Git. Assume state can contain
@@ -182,6 +243,8 @@ database-migration commands here and in README.md in the same change.
 - Domain invariants belong in DOMAIN_MODEL.md.
 - Component boundaries and runtime flows belong in ARCHITECTURE.md.
 - AWS resources, state, deployment, and recovery belong in INFRASTRUCTURE.md.
+- Milestone tasks and acceptance criteria belong in BUILD_PLAN.md.
+- Current progress, verification, blockers, and next action belong in STATUS.md.
 - Major durable decisions require an ADR using the template in
   docs/decisions/README.md.
 - Keep ADRs immutable after acceptance except for status or clarifying notes;
