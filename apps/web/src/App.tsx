@@ -19,6 +19,7 @@ import {
   loadWall,
   replaceToday,
   resetDevelopmentData,
+  skipToday,
 } from './api';
 
 type View = 'today' | 'wall' | 'history' | 'settings';
@@ -49,6 +50,7 @@ interface TodayViewProps {
   pending: boolean;
   onAccept: () => Promise<void>;
   onReplace: () => Promise<void>;
+  onSkip: () => Promise<void>;
   onAddCount: (amount: number) => Promise<void>;
   onConfirm: () => Promise<void>;
   onCompleteChecklistItem: (itemId: string) => Promise<void>;
@@ -209,12 +211,18 @@ function TodayView(props: TodayViewProps) {
       <header className="page-heading">
         <p className="eyebrow">{formatLocalDate(assignment.localDate)}</p>
         <h1>
-          {assignment.status === 'completed' ? 'Action, recorded.' : 'One deliberate action.'}
+          {assignment.status === 'completed'
+            ? 'Action, recorded.'
+            : assignment.status === 'skipped'
+              ? 'Rest is allowed.'
+              : 'One deliberate action.'}
         </h1>
         <p className="lede">
           {assignment.status === 'completed'
             ? 'This challenge is now part of your private Wall of Goodness.'
-            : 'A small, concrete challenge that supports the person you are working to become.'}
+            : assignment.status === 'skipped'
+              ? 'You skipped today without penalty. A streak is encouragement, never a moral score.'
+              : 'A small, concrete challenge that supports the person you are working to become.'}
         </p>
       </header>
 
@@ -231,6 +239,7 @@ function TodayView(props: TodayViewProps) {
             {assignment.status === 'proposed' && 'Today’s challenge'}
             {assignment.status === 'accepted' && 'Challenge in progress'}
             {assignment.status === 'completed' && 'Challenge complete'}
+            {assignment.status === 'skipped' && 'Skipped for today'}
           </p>
           <h2>{challenge.title}</h2>
           <p>{challenge.instructions}</p>
@@ -254,6 +263,14 @@ function TodayView(props: TodayViewProps) {
               type="button"
             >
               Try a different challenge
+            </button>
+            <button
+              className="text-button text-button--quiet"
+              disabled={pending}
+              onClick={() => void props.onSkip()}
+              type="button"
+            >
+              Skip for today
             </button>
             {today.replacementCount > 0 && (
               <small className="replacement-note">Replaced without penalty.</small>
@@ -310,6 +327,16 @@ function TodayView(props: TodayViewProps) {
             <button className="secondary-button" onClick={onViewWall} type="button">
               View your wall
             </button>
+          </div>
+        )}
+
+        {assignment.status === 'skipped' && (
+          <div className="skip-panel" role="status">
+            <span aria-hidden="true">—</span>
+            <p>
+              <strong>No action is required today.</strong>
+              <small>Your wall and completion totals are unchanged.</small>
+            </p>
           </div>
         )}
       </article>
@@ -578,6 +605,7 @@ export function App() {
               }
               onConfirm={() => runAction(() => confirmProgress(today.assignment.id))}
               onReplace={() => runAction(replaceToday)}
+              onSkip={() => runAction(skipToday)}
               onViewWall={() => {
                 setView('wall');
               }}

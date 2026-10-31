@@ -76,6 +76,7 @@ export const dailyAssignmentSchema = z.object({
   proposedAt: z.iso.datetime(),
   acceptedAt: z.iso.datetime().optional(),
   completedAt: z.iso.datetime().optional(),
+  skippedAt: z.iso.datetime().optional(),
 });
 
 export const streakStateSchema = z.object({
@@ -144,6 +145,10 @@ export const progressEventCommandSchema = z.discriminatedUnion('kind', [
 ]);
 
 export const replaceChallengeCommandSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+});
+
+export const skipChallengeCommandSchema = z.object({
   reason: z.string().trim().max(300).optional(),
 });
 

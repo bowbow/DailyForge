@@ -7,6 +7,7 @@ export {
   progressIsComplete,
   recordProgressEvent,
   replaceAssignment,
+  skipAssignment,
 } from './challenge';
 export {
   challengeCategories,

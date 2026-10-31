@@ -8,6 +8,7 @@ import {
   progressFor,
   recordProgressEvent,
   replaceAssignment,
+  skipAssignment,
 } from './challenge';
 import {
   type ChallengeDefinition,
@@ -236,6 +237,22 @@ describe('other tracking policies', () => {
         proposedAt: '2026-10-30T18:00:00.000Z',
       }),
     ).toThrowError(/only be replaced before/);
+  });
+
+  it('skips a proposal without creating progress or completion', () => {
+    const skipped = skipAssignment(assignment, '2026-10-30T18:00:00.000Z');
+
+    expect(skipped).toMatchObject({
+      status: 'skipped',
+      skippedAt: '2026-10-30T18:00:00.000Z',
+    });
+    expect(skipAssignment(skipped, '2026-10-30T19:00:00.000Z')).toBe(skipped);
+    expect(() =>
+      skipAssignment(
+        acceptAssignment(assignment, '2026-10-30T17:00:00.000Z'),
+        '2026-10-30T18:00:00.000Z',
+      ),
+    ).toThrowError(/only be skipped before/);
   });
 });
 

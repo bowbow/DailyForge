@@ -86,8 +86,9 @@ pnpm build
 pnpm check
 ```
 
-`pnpm test:e2e` runs the core flows in desktop Chromium and a Pixel 6-sized
-mobile browser profile. Install the Playwright Chromium runtime once with:
+`pnpm test:e2e` runs the core flows and an automated WCAG accessibility scan in
+desktop Chromium and a Pixel 6-sized mobile browser profile. Install the
+Playwright Chromium runtime once with:
 
 ```powershell
 pnpm --filter @daily-forge/web exec playwright install chromium

@@ -31,6 +31,19 @@ export function acceptAssignment(assignment: DailyAssignment, acceptedAt: string
   return { ...assignment, status: 'accepted', acceptedAt };
 }
 
+export function skipAssignment(assignment: DailyAssignment, skippedAt: string): DailyAssignment {
+  if (assignment.status === 'skipped') {
+    return assignment;
+  }
+  if (assignment.status !== 'proposed') {
+    throw new DomainError(
+      'skip-not-available',
+      'A challenge can only be skipped before it is accepted.',
+    );
+  }
+  return { ...assignment, status: 'skipped', skippedAt };
+}
+
 export interface ReplaceAssignmentInput {
   assignment: DailyAssignment;
   nextAssignmentId: string;

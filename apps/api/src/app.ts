@@ -9,6 +9,7 @@ import {
   historyResponseSchema,
   progressEventCommandSchema,
   replaceChallengeCommandSchema,
+  skipChallengeCommandSchema,
   todayResponseSchema,
   wallResponseSchema,
 } from '@daily-forge/contracts';
@@ -47,6 +48,11 @@ export function buildApp(options: BuildAppOptions = {}) {
   app.post('/api/v1/today/replace', (request) => {
     replaceChallengeCommandSchema.parse(request.body);
     return todayResponseSchema.parse(store.replace());
+  });
+
+  app.post('/api/v1/today/skip', (request) => {
+    skipChallengeCommandSchema.parse(request.body);
+    return todayResponseSchema.parse(store.skip());
   });
 
   app.post<{ Params: { assignmentId: string } }>(

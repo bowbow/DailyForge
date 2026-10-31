@@ -6,6 +6,7 @@ import {
   progressFor,
   recordProgressEvent,
   replaceAssignment,
+  skipAssignment,
   type ChallengeCategory,
   type ChallengeDefinition,
   type Completion,
@@ -147,6 +148,11 @@ export class DevelopmentStore {
     this.assignment = result.next;
     this.replacementCount = nextCount;
     this.progressEvents = [];
+    return this.getToday();
+  }
+
+  skip(): TodayResponse {
+    this.assignment = skipAssignment(this.assignment, this.clock().toISOString());
     return this.getToday();
   }
 

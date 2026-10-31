@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page, request }) => {
@@ -91,4 +92,17 @@ test('exposes install metadata and has no horizontal overflow', async ({ page, r
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
+});
+
+test('skips today without pressure or a completion', async ({ page }) => {
+  await page.getByRole('button', { name: 'Skip for today' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Rest is allowed.' })).toBeVisible();
+  await expect(page.getByText('No action is required today.')).toBeVisible();
+  await expect(page.getByText('Your wall and completion totals are unchanged.')).toBeVisible();
+});
+
+test('has no automatically detectable accessibility violations', async ({ page }) => {
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
 });

@@ -48,6 +48,13 @@ export function replaceToday(): Promise<TodayResponse> {
   });
 }
 
+export function skipToday(): Promise<TodayResponse> {
+  return request('/api/v1/today/skip', todayResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
 function addProgress(
   assignmentId: string,
   progress: Record<string, unknown>,

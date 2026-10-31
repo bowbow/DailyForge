@@ -142,6 +142,25 @@ describe('counter challenge flow', () => {
       reflection: 'Three small sets made the challenge approachable.',
     });
 
+    const bodyWall = wallResponseSchema.parse(
+      (
+        await app.inject({
+          method: 'GET',
+          url: '/api/v1/wall?category=body',
+        })
+      ).json(),
+    );
+    const characterWall = wallResponseSchema.parse(
+      (
+        await app.inject({
+          method: 'GET',
+          url: '/api/v1/wall?category=character',
+        })
+      ).json(),
+    );
+    expect(bodyWall.entries).toHaveLength(1);
+    expect(characterWall.entries).toHaveLength(0);
+
     const history = historyResponseSchema.parse(
       (
         await app.inject({
@@ -182,6 +201,42 @@ describe('counter challenge flow', () => {
     });
   });
 
+  it('rejects malformed and policy-mismatched progress commands', async () => {
+    const app = appForTest();
+    await app.inject({ method: 'POST', url: '/api/v1/today/accept' });
+
+    const malformed = await app.inject({
+      method: 'POST',
+      url: '/api/v1/challenges/development-assignment-today/progress-events',
+      payload: {
+        eventId: '11111111-1111-4111-8111-111111111111',
+        amount: 5,
+        occurredAt: fixedNow.toISOString(),
+      },
+    });
+    expect(malformed.statusCode).toBe(400);
+    expect(malformed.json()).toMatchObject({ code: 'invalid-request' });
+
+    const wrongPolicy = await app.inject({
+      method: 'POST',
+      url: '/api/v1/challenges/development-assignment-today/progress-events',
+      payload: {
+        eventId: '22222222-2222-4222-8222-222222222222',
+        kind: 'time-added',
+        seconds: 300,
+        occurredAt: fixedNow.toISOString(),
+      },
+    });
+    expect(wrongPolicy.statusCode).toBe(409);
+    expect(wrongPolicy.json()).toMatchObject({ code: 'tracking-policy-mismatch' });
+
+    const invalidFilter = await app.inject({
+      method: 'GET',
+      url: '/api/v1/wall?category=unknown',
+    });
+    expect(invalidFilter.statusCode).toBe(400);
+  });
+
   it('cycles through alternative challenge policies before acceptance', async () => {
     const app = appForTest();
 
@@ -217,5 +272,32 @@ describe('counter challenge flow', () => {
     });
     expect(rejected.statusCode).toBe(409);
     expect(rejected.json()).toMatchObject({ code: 'replacement-not-available' });
+  });
+
+  it('skips without changing the streak or private wall', async () => {
+    const app = appForTest();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/today/skip',
+      payload: {},
+    });
+    const skipped = todayResponseSchema.parse(response.json());
+
+    expect(skipped.assignment).toMatchObject({
+      status: 'skipped',
+      skippedAt: fixedNow.toISOString(),
+    });
+    expect(skipped.streak).toMatchObject({ current: 0, lifetimeCompletions: 0 });
+    expect(
+      wallResponseSchema.parse((await app.inject({ method: 'GET', url: '/api/v1/wall' })).json())
+        .entries,
+    ).toEqual([]);
+
+    const acceptAfterSkip = await app.inject({
+      method: 'POST',
+      url: '/api/v1/today/accept',
+    });
+    expect(acceptAfterSkip.statusCode).toBe(409);
+    expect(acceptAfterSkip.json()).toMatchObject({ code: 'assignment-not-available' });
   });
 });

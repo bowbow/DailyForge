@@ -57,6 +57,7 @@ export interface DailyAssignment {
   proposedAt: string;
   acceptedAt?: string;
   completedAt?: string;
+  skippedAt?: string;
 }
 
 interface ProgressEventBase {

@@ -1,9 +1,9 @@
 # Build status
 
 - Last updated: 2026-10-30
-- Active milestone: Extended Autonomous Run 1 — quality and PWA baseline
-- State: Stages A through C complete; quality hardening in progress
-- Last stable checkpoint: Complete multi-policy local challenge loop
+- Active milestone: Extended Autonomous Run 1 — complete
+- State: Runnable local product slice and quality hardening complete
+- Last stable checkpoint: Accessible, multi-policy local PWA loop
 
 ## What works now
 
@@ -19,6 +19,8 @@
 - Curated Body, Character, Community, and Creativity development catalog.
 - Counter, checklist, one-time confirmation, and time tracking policies.
 - No-penalty replacement before acceptance and optional private reflection.
+- Non-punitive skip-before-acceptance flow that leaves streak and wall totals
+  unchanged.
 - Wall category filters and history totals by category.
 - Server-authoritative streak and immutable wall-entry snapshots.
 - PWA manifest, mobile metadata, and placeholder install icon.
@@ -43,8 +45,14 @@
   completion, streak, and private-wall journey.
 - Playwright verifies the counter and checklist/reflection journeys in desktop
   Chromium and a Pixel 6-sized mobile profile.
-- Ten Playwright cases now cover all four tracking policies, install metadata,
-  and horizontal-overflow checks across both browser profiles.
+- Fourteen Playwright cases cover all four tracking policies, replacement,
+  skip, install metadata, horizontal overflow, and automated accessibility
+  scans across both browser profiles.
+- The initial automated accessibility scan found muted text below WCAG AA
+  contrast; the palette was corrected and the scan now reports no violations.
+- Seven contract, eight domain, and six API integration tests cover validated
+  commands, completion invariants, malformed input, wall filtering, skip, and
+  replacement behavior.
 
 ## Current assumptions
 
@@ -75,11 +83,12 @@ Later-phase blockers:
 
 ## Exact next action
 
-Execute the quality stage:
+Prepare Milestone 2 only after the next authorization boundary:
 
-1. Add browser coverage for confirmation and time-tracking alternatives.
-2. Run accessibility and responsive overflow checks.
-3. Verify PWA metadata in the production build.
-4. Reconcile product and domain documentation with the implemented first loop.
-5. Leave PostgreSQL, authentication, offline mutation sync, and all AWS changes
-   for separately authorized future runs.
+1. Repair Docker Desktop's stale socket issue or approve an alternative local
+   PostgreSQL runtime.
+2. Select the database access and migration library.
+3. Implement durable PostgreSQL adapters behind the existing domain and API
+   contracts.
+4. Continue to leave authentication, offline mutation sync, Terraform apply,
+   and all AWS resource creation for separately reviewed stages.

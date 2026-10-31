@@ -30,7 +30,7 @@ policies while preserving the broader model below:
 
 The current completion transaction derives a human-readable result, snapshots
 the challenge into one private wall entry, and advances the streak once. A
-proposal may be replaced before acceptance without a streak penalty. Narrative
+proposal may be replaced or skipped before acceptance without a streak penalty. Narrative
 accounts, artifact attachments, reopened checklist items, durable persistence,
 and cross-device reconciliation remain future extensions.
 

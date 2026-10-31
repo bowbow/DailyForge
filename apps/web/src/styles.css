@@ -89,7 +89,7 @@ a:focus-visible {
 
 .brand small {
   margin-top: 3px;
-  color: #716c61;
+  color: #665f56;
   font-size: 0.77rem;
 }
 
@@ -114,7 +114,7 @@ a:focus-visible {
 .nav-item span {
   font-family: ui-monospace, 'Cascadia Code', monospace;
   font-size: 0.67rem;
-  opacity: 0.65;
+  opacity: 1;
 }
 
 .nav-item:hover {
@@ -137,7 +137,7 @@ a:focus-visible {
 
 .category-list__heading {
   margin: 0 0 2px;
-  color: #8a8274;
+  color: #665f56;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -163,7 +163,7 @@ a:focus-visible {
 }
 
 .category-note small {
-  color: #777064;
+  color: #675f55;
   font-size: 0.68rem;
   line-height: 1.35;
 }
@@ -197,7 +197,7 @@ a:focus-visible {
   align-items: center;
   gap: 8px;
   margin-top: auto;
-  color: #777064;
+  color: #675f55;
   font-size: 0.72rem;
 }
 
@@ -294,13 +294,13 @@ h1 {
 }
 
 .effort-label {
-  color: #857d70;
+  color: #6b6459;
   font-size: 0.77rem;
 }
 
 .challenge-number {
   margin: 0 0 9px;
-  color: #958a7a;
+  color: #6b6459;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -343,7 +343,7 @@ h1 {
 }
 
 .progress-copy span {
-  color: #777064;
+  color: #675f55;
   font-size: 0.82rem;
 }
 
@@ -413,8 +413,14 @@ h1 {
   opacity: 0.5;
 }
 
+.text-button--quiet {
+  color: #7c7469;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .replacement-note {
-  color: #777064;
+  color: #675f55;
   text-align: center;
 }
 
@@ -531,6 +537,38 @@ h1 {
   padding: 18px;
 }
 
+.skip-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #d4cbbb;
+  border-radius: 14px;
+  background: #f1ece2;
+  padding: 18px;
+}
+
+.skip-panel > span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #ddd4c5;
+  color: #615b52;
+  font-weight: 900;
+}
+
+.skip-panel p {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.skip-panel small {
+  color: #746e63;
+}
+
 .completion-panel > div {
   display: flex;
   align-items: center;
@@ -567,7 +605,7 @@ h1 {
   margin-top: 56px;
   border: 1px dashed #cfc5b4;
   border-radius: 18px;
-  color: #777064;
+  color: #675f55;
   padding: 36px;
 }
 
@@ -836,7 +874,7 @@ h1 {
     border: 0;
     border-radius: 10px;
     background: transparent;
-    color: #777064;
+    color: #675f55;
     font-size: 0.68rem;
   }
 
