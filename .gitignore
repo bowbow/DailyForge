@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Application build and test output
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+*.log
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Local databases, exports, and backups
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+backups/
+exports/
+
+# Terraform working data, state, plans, and private variable files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.auto.tfvars
+*.auto.tfvars.json
+!*.auto.tfvars.example
+!*.auto.tfvars.json.example
+.terraformrc
+terraform.rc
+
+# Local certificates and keys
+certs/
+*.pem
+*.key
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
