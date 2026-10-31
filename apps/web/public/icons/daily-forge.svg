@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Daily Forge</title>
+  <rect width="512" height="512" rx="112" fill="#243e35"/>
+  <path d="M150 138h113c76 0 125 45 125 117s-49 119-125 119H150V138Zm108 177c38 0 62-22 62-59 0-36-24-58-62-58h-41v117h41Z" fill="#f7f1e5"/>
+  <path d="M121 399h270" stroke="#bb5e3f" stroke-width="24" stroke-linecap="round"/>
+</svg>

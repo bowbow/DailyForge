@@ -18,6 +18,22 @@ Completion ───────────── StreakState
 GoodnessEntry
 ```
 
+## Current runnable slice
+
+The in-memory development adapter implements four deterministic tracking
+policies while preserving the broader model below:
+
+- `counter`: positive, idempotent increments toward a visible target.
+- `checklist`: each known item can be completed once.
+- `confirmation`: one durable self-attestation for a concrete action.
+- `timer`: positive duration increments toward a visible target.
+
+The current completion transaction derives a human-readable result, snapshots
+the challenge into one private wall entry, and advances the streak once. A
+proposal may be replaced before acceptance without a streak penalty. Narrative
+accounts, artifact attachments, reopened checklist items, durable persistence,
+and cross-device reconciliation remain future extensions.
+
 ## Core entities
 
 ### User

@@ -8,7 +8,32 @@ export interface CounterPolicy {
   kind: 'counter';
   target: number;
   unit: string;
+  increments: number[];
 }
+
+export interface ConfirmationPolicy {
+  kind: 'confirmation';
+  actionLabel: string;
+  resultLabel: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  label: string;
+}
+
+export interface ChecklistPolicy {
+  kind: 'checklist';
+  items: ChecklistItem[];
+}
+
+export interface TimerPolicy {
+  kind: 'timer';
+  targetSeconds: number;
+  incrementsSeconds: number[];
+}
+
+export type TrackingPolicy = CounterPolicy | ConfirmationPolicy | ChecklistPolicy | TimerPolicy;
 
 export interface ChallengeDefinition {
   id: string;
@@ -19,7 +44,7 @@ export interface ChallengeDefinition {
   practicedQualities: string[];
   expectedMinutes: number;
   safetyNote?: string;
-  tracking: CounterPolicy;
+  tracking: TrackingPolicy;
 }
 
 export interface DailyAssignment {
@@ -34,13 +59,48 @@ export interface DailyAssignment {
   completedAt?: string;
 }
 
-export interface CountAddedEvent {
+interface ProgressEventBase {
   id: string;
   assignmentId: string;
-  kind: 'count-added';
-  amount: number;
   occurredAt: string;
 }
+
+export interface CountAddedEvent extends ProgressEventBase {
+  kind: 'count-added';
+  amount: number;
+}
+
+export interface ConfirmationRecordedEvent extends ProgressEventBase {
+  kind: 'confirmation-recorded';
+}
+
+export interface ChecklistItemCompletedEvent extends ProgressEventBase {
+  kind: 'checklist-item-completed';
+  itemId: string;
+}
+
+export interface TimeAddedEvent extends ProgressEventBase {
+  kind: 'time-added';
+  seconds: number;
+}
+
+export type ProgressEvent =
+  CountAddedEvent | ConfirmationRecordedEvent | ChecklistItemCompletedEvent | TimeAddedEvent;
+
+export type ProgressState =
+  | { kind: 'counter'; current: number; target: number; unit: string; increments: number[] }
+  | { kind: 'confirmation'; confirmed: boolean; actionLabel: string }
+  | {
+      kind: 'checklist';
+      completedItemIds: string[];
+      items: ChecklistItem[];
+    }
+  | {
+      kind: 'timer';
+      currentSeconds: number;
+      targetSeconds: number;
+      incrementsSeconds: number[];
+    };
 
 export interface Completion {
   id: string;
@@ -48,7 +108,8 @@ export interface Completion {
   userId: string;
   completedAt: string;
   localDate: string;
-  total: number;
+  progressValue: number;
+  result: string;
 }
 
 export interface GoodnessEntry {

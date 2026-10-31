@@ -1,9 +1,9 @@
 # Build status
 
 - Last updated: 2026-10-30
-- Active milestone: Extended Autonomous Run 1 — Stage C
-- State: Stages A and B complete; broader challenge catalog in progress
-- Last stable checkpoint: Complete counter-challenge vertical slice
+- Active milestone: Extended Autonomous Run 1 — quality and PWA baseline
+- State: Stages A through C complete; quality hardening in progress
+- Last stable checkpoint: Complete multi-policy local challenge loop
 
 ## What works now
 
@@ -16,7 +16,12 @@
 - Validated API contracts and in-memory application store for today's
   challenge, streak, wall, history, and development reset.
 - Working 20-push-up flow from acceptance through private wall entry.
+- Curated Body, Character, Community, and Creativity development catalog.
+- Counter, checklist, one-time confirmation, and time tracking policies.
+- No-penalty replacement before acceptance and optional private reflection.
+- Wall category filters and history totals by category.
 - Server-authoritative streak and immutable wall-entry snapshots.
+- PWA manifest, mobile metadata, and placeholder install icon.
 - Canonical development and quality commands.
 
 ## Verification
@@ -36,6 +41,10 @@
   domain tests, three API integration tests, and production web build.
 - Live browser verification completed the full accept, four-increment,
   completion, streak, and private-wall journey.
+- Playwright verifies the counter and checklist/reflection journeys in desktop
+  Chromium and a Pixel 6-sized mobile profile.
+- Ten Playwright cases now cover all four tracking policies, install metadata,
+  and horizontal-overflow checks across both browser profiles.
 
 ## Current assumptions
 
@@ -66,12 +75,11 @@ Later-phase blockers:
 
 ## Exact next action
 
-Execute Stage C:
+Execute the quality stage:
 
-1. Expand the seeded catalog across Body, Character, Community, and Creativity.
-2. Add appropriate tracking policies for one-time acts, checklists, and timed
-   practices while keeping running training out of scope.
-3. Add safe challenge replacement and optional completion reflection.
-4. Add wall filtering and richer history summaries.
-5. Add browser automation and mobile-responsive coverage, then continue to the
-   quality stage.
+1. Add browser coverage for confirmation and time-tracking alternatives.
+2. Run accessibility and responsive overflow checks.
+3. Verify PWA metadata in the production build.
+4. Reconcile product and domain documentation with the implemented first loop.
+5. Leave PostgreSQL, authentication, offline mutation sync, and all AWS changes
+   for separately authorized future runs.

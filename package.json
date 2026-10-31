@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "typecheck": "pnpm --recursive --if-present typecheck",
     "test": "pnpm --workspace-concurrency=1 --recursive --if-present test",
+    "test:e2e": "pnpm --filter @daily-forge/web test:e2e",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {

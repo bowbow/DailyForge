@@ -2,11 +2,13 @@ import Fastify from 'fastify';
 import { ZodError } from 'zod';
 
 import {
+  challengeCategorySchema,
   completeChallengeCommandSchema,
-  countProgressCommandSchema,
   errorResponseSchema,
   healthResponseSchema,
   historyResponseSchema,
+  progressEventCommandSchema,
+  replaceChallengeCommandSchema,
   todayResponseSchema,
   wallResponseSchema,
 } from '@daily-forge/contracts';
@@ -42,10 +44,15 @@ export function buildApp(options: BuildAppOptions = {}) {
 
   app.post('/api/v1/today/accept', () => todayResponseSchema.parse(store.accept()));
 
+  app.post('/api/v1/today/replace', (request) => {
+    replaceChallengeCommandSchema.parse(request.body);
+    return todayResponseSchema.parse(store.replace());
+  });
+
   app.post<{ Params: { assignmentId: string } }>(
     '/api/v1/challenges/:assignmentId/progress-events',
     (request) => {
-      const command = countProgressCommandSchema.parse(request.body);
+      const command = progressEventCommandSchema.parse(request.body);
       return todayResponseSchema.parse(store.recordProgress(request.params.assignmentId, command));
     },
   );
@@ -58,7 +65,10 @@ export function buildApp(options: BuildAppOptions = {}) {
     },
   );
 
-  app.get('/api/v1/wall', () => wallResponseSchema.parse(store.getWall()));
+  app.get<{ Querystring: { category?: string } }>('/api/v1/wall', (request) => {
+    const category = challengeCategorySchema.optional().parse(request.query.category);
+    return wallResponseSchema.parse(store.getWall(category));
+  });
 
   app.get('/api/v1/history', () => historyResponseSchema.parse(store.getHistory()));
 

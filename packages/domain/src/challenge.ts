@@ -1,8 +1,10 @@
 import {
+  type ChallengeDefinition,
   type Completion,
-  type CountAddedEvent,
   type DailyAssignment,
   type GoodnessEntry,
+  type ProgressEvent,
+  type ProgressState,
   type StreakState,
 } from './types';
 
@@ -26,18 +28,42 @@ export function acceptAssignment(assignment: DailyAssignment, acceptedAt: string
       'This challenge is no longer available to accept.',
     );
   }
+  return { ...assignment, status: 'accepted', acceptedAt };
+}
+
+export interface ReplaceAssignmentInput {
+  assignment: DailyAssignment;
+  nextAssignmentId: string;
+  nextChallenge: ChallengeDefinition;
+  proposedAt: string;
+}
+
+export function replaceAssignment(input: ReplaceAssignmentInput): {
+  replaced: DailyAssignment;
+  next: DailyAssignment;
+} {
+  if (input.assignment.status !== 'proposed') {
+    throw new DomainError(
+      'replacement-not-available',
+      'A challenge can only be replaced before it is accepted.',
+    );
+  }
   return {
-    ...assignment,
-    status: 'accepted',
-    acceptedAt,
+    replaced: { ...input.assignment, status: 'replaced' },
+    next: {
+      ...input.assignment,
+      id: input.nextAssignmentId,
+      challenge: input.nextChallenge,
+      proposedAt: input.proposedAt,
+    },
   };
 }
 
-export function addCountEvent(
+export function recordProgressEvent(
   assignment: DailyAssignment,
-  existingEvents: CountAddedEvent[],
-  event: CountAddedEvent,
-): CountAddedEvent[] {
+  existingEvents: ProgressEvent[],
+  event: ProgressEvent,
+): ProgressEvent[] {
   if (existingEvents.some((existing) => existing.id === event.id)) {
     return existingEvents;
   }
@@ -53,34 +79,105 @@ export function addCountEvent(
       'This progress event belongs to a different challenge.',
     );
   }
-  if (!Number.isSafeInteger(event.amount) || event.amount <= 0) {
-    throw new DomainError('invalid-count', 'Progress must be a positive whole number.');
+
+  const policy = assignment.challenge.tracking;
+  if (policy.kind === 'counter' && event.kind === 'count-added') {
+    assertPositiveInteger(
+      event.amount,
+      'invalid-count',
+      'Progress must be a positive whole number.',
+    );
+  } else if (policy.kind === 'confirmation' && event.kind === 'confirmation-recorded') {
+    // The event itself is the durable confirmation.
+  } else if (policy.kind === 'checklist' && event.kind === 'checklist-item-completed') {
+    if (!policy.items.some((item) => item.id === event.itemId)) {
+      throw new DomainError(
+        'unknown-checklist-item',
+        'That checklist item is not part of this challenge.',
+      );
+    }
+    if (
+      existingEvents.some(
+        (existing) =>
+          existing.kind === 'checklist-item-completed' && existing.itemId === event.itemId,
+      )
+    ) {
+      return existingEvents;
+    }
+  } else if (policy.kind === 'timer' && event.kind === 'time-added') {
+    assertPositiveInteger(
+      event.seconds,
+      'invalid-time',
+      'Time must be a positive whole number of seconds.',
+    );
+  } else {
+    throw new DomainError(
+      'tracking-policy-mismatch',
+      'This progress event does not match the challenge tracking method.',
+    );
   }
+
   return [...existingEvents, event];
 }
 
-export function countProgress(assignmentId: string, events: CountAddedEvent[]): number {
-  return events
-    .filter((event) => event.assignmentId === assignmentId)
-    .reduce((total, event) => total + event.amount, 0);
+export function progressFor(assignment: DailyAssignment, events: ProgressEvent[]): ProgressState {
+  const relevant = events.filter((event) => event.assignmentId === assignment.id);
+  const policy = assignment.challenge.tracking;
+  switch (policy.kind) {
+    case 'counter':
+      return {
+        kind: 'counter',
+        current: relevant.reduce(
+          (total, event) => total + (event.kind === 'count-added' ? event.amount : 0),
+          0,
+        ),
+        target: policy.target,
+        unit: policy.unit,
+        increments: policy.increments,
+      };
+    case 'confirmation':
+      return {
+        kind: 'confirmation',
+        confirmed: relevant.some((event) => event.kind === 'confirmation-recorded'),
+        actionLabel: policy.actionLabel,
+      };
+    case 'checklist':
+      return {
+        kind: 'checklist',
+        completedItemIds: relevant.flatMap((event) =>
+          event.kind === 'checklist-item-completed' ? [event.itemId] : [],
+        ),
+        items: policy.items,
+      };
+    case 'timer':
+      return {
+        kind: 'timer',
+        currentSeconds: relevant.reduce(
+          (total, event) => total + (event.kind === 'time-added' ? event.seconds : 0),
+          0,
+        ),
+        targetSeconds: policy.targetSeconds,
+        incrementsSeconds: policy.incrementsSeconds,
+      };
+  }
 }
 
-export interface CompleteCounterInput {
+export interface CompleteChallengeInput {
   assignment: DailyAssignment;
-  events: CountAddedEvent[];
+  events: ProgressEvent[];
   completionId: string;
   wallEntryId: string;
   completedAt: string;
   reflection?: string;
 }
 
-export interface CompleteCounterResult {
+export interface CompleteChallengeResult {
   assignment: DailyAssignment;
   completion: Completion;
   wallEntry: GoodnessEntry;
 }
 
-export function completeCounterChallenge(input: CompleteCounterInput): CompleteCounterResult {
+export function completeChallenge(input: CompleteChallengeInput): CompleteChallengeResult {
   const { assignment } = input;
   if (assignment.status !== 'accepted') {
     throw new DomainError(
@@ -89,8 +186,9 @@ export function completeCounterChallenge(input: CompleteCounterInput): CompleteC
     );
   }
 
-  const total = countProgress(assignment.id, input.events);
-  if (total < assignment.challenge.tracking.target) {
+  const progress = progressFor(assignment, input.events);
+  const completionData = completionDataFor(assignment.challenge, progress);
+  if (!completionData.ready) {
     throw new DomainError(
       'target-not-reached',
       'The visible challenge target has not been reached yet.',
@@ -108,7 +206,8 @@ export function completeCounterChallenge(input: CompleteCounterInput): CompleteC
     userId: assignment.userId,
     completedAt: input.completedAt,
     localDate: assignment.localDate,
-    total,
+    progressValue: completionData.value,
+    result: completionData.result,
   };
   const wallEntry: GoodnessEntry = {
     id: input.wallEntryId,
@@ -120,15 +219,24 @@ export function completeCounterChallenge(input: CompleteCounterInput): CompleteC
     practicedQualities: assignment.challenge.practicedQualities,
     challengeTitle: assignment.challenge.title,
     challengeInstructions: assignment.challenge.instructions,
-    result: total + ' ' + assignment.challenge.tracking.unit,
+    result: completion.result,
     ...(input.reflection ? { reflection: input.reflection } : {}),
   };
 
-  return {
-    assignment: completedAssignment,
-    completion,
-    wallEntry,
-  };
+  return { assignment: completedAssignment, completion, wallEntry };
+}
+
+export function progressIsComplete(progress: ProgressState): boolean {
+  switch (progress.kind) {
+    case 'counter':
+      return progress.current >= progress.target;
+    case 'confirmation':
+      return progress.confirmed;
+    case 'checklist':
+      return progress.completedItemIds.length >= progress.items.length;
+    case 'timer':
+      return progress.currentSeconds >= progress.targetSeconds;
+  }
 }
 
 export function advanceStreak(streak: StreakState, localDate: string): StreakState {
@@ -147,6 +255,53 @@ export function advanceStreak(streak: StreakState, localDate: string): StreakSta
     lifetimeCompletions: streak.lifetimeCompletions + 1,
     lastCompletedLocalDate: localDate,
   };
+}
+
+function completionDataFor(
+  challenge: ChallengeDefinition,
+  progress: ProgressState,
+): { ready: boolean; value: number; result: string } {
+  if (challenge.tracking.kind !== progress.kind) {
+    throw new DomainError(
+      'tracking-policy-mismatch',
+      'Challenge progress could not be interpreted.',
+    );
+  }
+  switch (progress.kind) {
+    case 'counter':
+      return {
+        ready: progress.current >= progress.target,
+        value: progress.current,
+        result: progress.current + ' ' + progress.unit,
+      };
+    case 'confirmation':
+      return {
+        ready: progress.confirmed,
+        value: progress.confirmed ? 1 : 0,
+        result:
+          challenge.tracking.kind === 'confirmation'
+            ? challenge.tracking.resultLabel
+            : 'Action completed',
+      };
+    case 'checklist':
+      return {
+        ready: progress.completedItemIds.length >= progress.items.length,
+        value: progress.completedItemIds.length,
+        result: progress.completedItemIds.length + ' deliberate steps completed',
+      };
+    case 'timer':
+      return {
+        ready: progress.currentSeconds >= progress.targetSeconds,
+        value: progress.currentSeconds,
+        result: Math.floor(progress.currentSeconds / 60) + ' minutes practiced',
+      };
+  }
+}
+
+function assertPositiveInteger(value: number, code: string, message: string): void {
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new DomainError(code, message);
+  }
 }
 
 function addDays(localDate: string, amount: number): string {

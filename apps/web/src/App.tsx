@@ -10,10 +10,14 @@ import { challengeCategories, type ChallengeCategory } from '@daily-forge/domain
 import {
   acceptToday,
   addCountProgress,
+  addTimeProgress,
+  completeChecklistItem,
   completeToday,
+  confirmProgress,
   loadHistory,
   loadToday,
   loadWall,
+  replaceToday,
   resetDevelopmentData,
 } from './api';
 
@@ -44,15 +48,161 @@ interface TodayViewProps {
   today: TodayResponse;
   pending: boolean;
   onAccept: () => Promise<void>;
-  onAdd: (amount: number) => Promise<void>;
-  onComplete: () => Promise<void>;
+  onReplace: () => Promise<void>;
+  onAddCount: (amount: number) => Promise<void>;
+  onConfirm: () => Promise<void>;
+  onCompleteChecklistItem: (itemId: string) => Promise<void>;
+  onAddTime: (seconds: number) => Promise<void>;
+  onComplete: (reflection?: string) => Promise<void>;
   onViewWall: () => void;
 }
 
-function TodayView({ today, pending, onAccept, onAdd, onComplete, onViewWall }: TodayViewProps) {
+function progressReady(progress: TodayResponse['progress']): boolean {
+  switch (progress.kind) {
+    case 'counter':
+      return progress.current >= progress.target;
+    case 'confirmation':
+      return progress.confirmed;
+    case 'checklist':
+      return progress.completedItemIds.length >= progress.items.length;
+    case 'timer':
+      return progress.currentSeconds >= progress.targetSeconds;
+  }
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return seconds + ' sec';
+  const minutes = Math.floor(seconds / 60);
+  return minutes + (minutes === 1 ? ' min' : ' mins');
+}
+
+interface ProgressControlsProps {
+  progress: TodayResponse['progress'];
+  pending: boolean;
+  onAddCount: (amount: number) => Promise<void>;
+  onConfirm: () => Promise<void>;
+  onCompleteChecklistItem: (itemId: string) => Promise<void>;
+  onAddTime: (seconds: number) => Promise<void>;
+}
+
+function ProgressControls(props: ProgressControlsProps) {
+  const { progress, pending } = props;
+  if (progress.kind === 'counter') {
+    const percent = Math.min(100, Math.round((progress.current / progress.target) * 100));
+    return (
+      <div className="progress-block">
+        <div className="progress-copy" aria-live="polite">
+          <strong>{progress.current}</strong>
+          <span>of {progress.target}</span>
+        </div>
+        <div
+          aria-label={progress.current + ' of ' + progress.target + ' ' + progress.unit}
+          aria-valuemax={progress.target}
+          aria-valuemin={0}
+          aria-valuenow={progress.current}
+          className="progress-track"
+          role="progressbar"
+        >
+          <div className="progress-fill" style={{ width: percent + '%' }} />
+        </div>
+        <div className="increment-row" aria-label={'Add ' + progress.unit + ' progress'}>
+          {progress.increments.map((increment) => (
+            <button
+              disabled={pending}
+              key={increment}
+              onClick={() => void props.onAddCount(increment)}
+              type="button"
+            >
+              +{increment}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (progress.kind === 'confirmation') {
+    return (
+      <button
+        aria-pressed={progress.confirmed}
+        className={progress.confirmed ? 'confirm-action confirm-action--done' : 'confirm-action'}
+        disabled={pending || progress.confirmed}
+        onClick={() => void props.onConfirm()}
+        type="button"
+      >
+        <span aria-hidden="true">{progress.confirmed ? '✓' : '○'}</span>
+        {progress.confirmed ? 'Action recorded' : progress.actionLabel}
+      </button>
+    );
+  }
+
+  if (progress.kind === 'checklist') {
+    return (
+      <div className="checklist" aria-label="Challenge steps">
+        {progress.items.map((item) => {
+          const completed = progress.completedItemIds.includes(item.id);
+          return (
+            <button
+              aria-pressed={completed}
+              className={completed ? 'checklist-item checklist-item--done' : 'checklist-item'}
+              disabled={pending || completed}
+              key={item.id}
+              onClick={() => void props.onCompleteChecklistItem(item.id)}
+              type="button"
+            >
+              <span aria-hidden="true">{completed ? '✓' : '○'}</span>
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const percent = Math.min(
+    100,
+    Math.round((progress.currentSeconds / progress.targetSeconds) * 100),
+  );
+  return (
+    <div className="progress-block">
+      <div className="progress-copy" aria-live="polite">
+        <strong>{formatDuration(progress.currentSeconds)}</strong>
+        <span>of {formatDuration(progress.targetSeconds)}</span>
+      </div>
+      <div
+        aria-label={
+          formatDuration(progress.currentSeconds) + ' of ' + formatDuration(progress.targetSeconds)
+        }
+        aria-valuemax={progress.targetSeconds}
+        aria-valuemin={0}
+        aria-valuenow={progress.currentSeconds}
+        className="progress-track"
+        role="progressbar"
+      >
+        <div className="progress-fill" style={{ width: percent + '%' }} />
+      </div>
+      <div className="increment-row" aria-label="Record creative practice time">
+        {progress.incrementsSeconds.map((seconds) => (
+          <button
+            disabled={pending}
+            key={seconds}
+            onClick={() => void props.onAddTime(seconds)}
+            type="button"
+          >
+            +{formatDuration(seconds)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TodayView(props: TodayViewProps) {
+  const { today, pending, onViewWall } = props;
   const { assignment, progress, streak } = today;
   const challenge = assignment.challenge;
-  const percent = Math.min(100, Math.round((progress.current / progress.target) * 100));
+  const [reflection, setReflection] = useState('');
+  const ready = progressReady(progress);
 
   return (
     <>
@@ -87,52 +237,58 @@ function TodayView({ today, pending, onAccept, onAdd, onComplete, onViewWall }: 
           {challenge.safetyNote && <p className="safety-note">{challenge.safetyNote}</p>}
         </div>
 
-        <div className="progress-block">
-          <div className="progress-copy" aria-live="polite">
-            <strong>{progress.current}</strong>
-            <span>of {progress.target}</span>
-          </div>
-          <div
-            aria-label={progress.current + ' of ' + progress.target + ' ' + challenge.tracking.unit}
-            aria-valuemax={progress.target}
-            aria-valuemin={0}
-            aria-valuenow={progress.current}
-            className="progress-track"
-            role="progressbar"
-          >
-            <div className="progress-fill" style={{ width: percent + '%' }} />
-          </div>
-        </div>
-
         {assignment.status === 'proposed' && (
-          <button
-            className="primary-button"
-            disabled={pending}
-            onClick={() => void onAccept()}
-            type="button"
-          >
-            {pending ? 'Accepting…' : 'Accept today’s challenge'}
-          </button>
+          <div className="proposal-actions">
+            <button
+              className="primary-button"
+              disabled={pending}
+              onClick={() => void props.onAccept()}
+              type="button"
+            >
+              {pending ? 'Saving…' : 'Accept today’s challenge'}
+            </button>
+            <button
+              className="text-button"
+              disabled={pending}
+              onClick={() => void props.onReplace()}
+              type="button"
+            >
+              Try a different challenge
+            </button>
+            {today.replacementCount > 0 && (
+              <small className="replacement-note">Replaced without penalty.</small>
+            )}
+          </div>
         )}
 
         {assignment.status === 'accepted' && (
           <div className="action-stack">
-            <div className="increment-row" aria-label="Add push-up progress">
-              <button disabled={pending} onClick={() => void onAdd(1)} type="button">
-                +1
-              </button>
-              <button disabled={pending} onClick={() => void onAdd(5)} type="button">
-                +5
-              </button>
-            </div>
+            <ProgressControls
+              onAddCount={props.onAddCount}
+              onAddTime={props.onAddTime}
+              onCompleteChecklistItem={props.onCompleteChecklistItem}
+              onConfirm={props.onConfirm}
+              pending={pending}
+              progress={progress}
+            />
+            <label className="reflection-field">
+              <span>Optional reflection</span>
+              <textarea
+                maxLength={1000}
+                onChange={(event) => setReflection(event.target.value)}
+                placeholder="What did you do or notice? This stays private."
+                rows={3}
+                value={reflection}
+              />
+            </label>
             <button
               className="primary-button"
-              disabled={pending || progress.current < progress.target}
-              onClick={() => void onComplete()}
+              disabled={pending || !ready}
+              onClick={() => void props.onComplete(reflection.trim() || undefined)}
               type="button"
             >
-              {progress.current < progress.target
-                ? progress.target - progress.current + ' remaining'
+              {!ready
+                ? 'Finish the visible steps first'
                 : pending
                   ? 'Completing…'
                   : 'Complete challenge'}
@@ -162,6 +318,9 @@ function TodayView({ today, pending, onAccept, onAdd, onComplete, onViewWall }: 
 }
 
 function WallView({ entries }: { entries: GoodnessEntryResponse[] }) {
+  const [category, setCategory] = useState<ChallengeCategory | 'all'>('all');
+  const visibleEntries =
+    category === 'all' ? entries : entries.filter((entry) => entry.category === category);
   return (
     <>
       <header className="page-heading">
@@ -172,13 +331,29 @@ function WallView({ entries }: { entries: GoodnessEntryResponse[] }) {
         </p>
       </header>
 
-      {entries.length === 0 ? (
+      <div className="filter-row" aria-label="Filter wall by area">
+        {(['all', ...challengeCategories] as const).map((value) => (
+          <button
+            aria-pressed={category === value}
+            className={category === value ? 'filter-chip filter-chip--active' : 'filter-chip'}
+            key={value}
+            onClick={() => setCategory(value)}
+            type="button"
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+
+      {visibleEntries.length === 0 ? (
         <div className="empty-state" role="status">
-          Complete a challenge and it will appear here.
+          {entries.length === 0
+            ? 'Complete a challenge and it will appear here.'
+            : 'No completed challenges in this area yet.'}
         </div>
       ) : (
         <div className="wall-list">
-          {entries.map((entry) => (
+          {visibleEntries.map((entry) => (
             <article className="wall-card" key={entry.id}>
               <div className="wall-card__meta">
                 <span className={'category-dot category-dot--' + entry.category} />
@@ -224,6 +399,16 @@ function HistoryView({ history }: { history: HistoryResponse | null }) {
           <strong>{streak.lifetimeCompletions}</strong>
           <span>Lifetime actions</span>
         </article>
+      </div>
+      <div className="category-summary">
+        <h2>Actions by area</h2>
+        {challengeCategories.map((category) => (
+          <div key={category}>
+            <span className={'category-dot category-dot--' + category} aria-hidden="true" />
+            <span>{category}</span>
+            <strong>{history?.completionsByCategory[category] ?? 0}</strong>
+          </div>
+        ))}
       </div>
     </>
   );
@@ -277,7 +462,7 @@ export function App() {
     const controller = new AbortController();
     void Promise.all([
       loadToday(controller.signal),
-      loadWall(controller.signal),
+      loadWall(undefined, controller.signal),
       loadHistory(controller.signal),
     ])
       .then(([nextToday, wall, nextHistory]) => {
@@ -379,8 +564,20 @@ export function App() {
           {!loading && today && view === 'today' && (
             <TodayView
               onAccept={() => runAction(acceptToday)}
-              onAdd={(amount) => runAction(() => addCountProgress(today.assignment.id, amount))}
-              onComplete={() => runAction(() => completeToday(today.assignment.id), true)}
+              onAddCount={(amount) =>
+                runAction(() => addCountProgress(today.assignment.id, amount))
+              }
+              onAddTime={(seconds) =>
+                runAction(() => addTimeProgress(today.assignment.id, seconds))
+              }
+              onComplete={(reflection) =>
+                runAction(() => completeToday(today.assignment.id, reflection), true)
+              }
+              onCompleteChecklistItem={(itemId) =>
+                runAction(() => completeChecklistItem(today.assignment.id, itemId))
+              }
+              onConfirm={() => runAction(() => confirmProgress(today.assignment.id))}
+              onReplace={() => runAction(replaceToday)}
               onViewWall={() => {
                 setView('wall');
               }}

@@ -391,6 +391,33 @@ h1 {
   gap: 16px;
 }
 
+.proposal-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.text-button {
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: #5c655f;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #b8ad9b;
+  text-underline-offset: 4px;
+}
+
+.text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.replacement-note {
+  color: #777064;
+  text-align: center;
+}
+
 .increment-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -416,6 +443,71 @@ h1 {
 .secondary-button:disabled {
   cursor: not-allowed;
   opacity: 0.52;
+}
+
+.confirm-action,
+.checklist-item {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #c7bcaa;
+  border-radius: 12px;
+  background: #f8f3e9;
+  color: #293d36;
+  padding: 12px 16px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.confirm-action span,
+.checklist-item span {
+  color: #9c5b40;
+  font-size: 1.15rem;
+}
+
+.confirm-action--done,
+.checklist-item--done {
+  border-color: #aebdad;
+  background: #e7eee6;
+}
+
+.confirm-action--done span,
+.checklist-item--done span {
+  color: #2f7053;
+}
+
+.checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.reflection-field {
+  display: grid;
+  gap: 8px;
+  color: #625d54;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.reflection-field textarea {
+  resize: vertical;
+  border: 1px solid #c7bcaa;
+  border-radius: 12px;
+  background: #fffcf6;
+  color: #302f2b;
+  padding: 12px 14px;
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.reflection-field textarea:focus-visible {
+  outline: 3px solid rgb(47 112 83 / 22%);
+  outline-offset: 2px;
 }
 
 .secondary-button {
@@ -477,6 +569,32 @@ h1 {
   border-radius: 18px;
   color: #777064;
   padding: 36px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 38px;
+}
+
+.filter-chip {
+  border: 1px solid #c9bfad;
+  border-radius: 999px;
+  background: transparent;
+  color: #6e675d;
+  padding: 8px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.filter-chip--active {
+  border-color: #2f5949;
+  background: #2f5949;
+  color: #fffaf1;
 }
 
 .loading-state,
@@ -577,6 +695,40 @@ h1 {
 .stat-grid span {
   color: #746e63;
   font-size: 0.78rem;
+}
+
+.category-summary {
+  display: grid;
+  max-width: 710px;
+  gap: 2px;
+  margin-top: 28px;
+  border: 1px solid #d9cfbd;
+  border-radius: 18px;
+  background: #fffdf8;
+  padding: 22px;
+}
+
+.category-summary h2 {
+  margin: 0 0 14px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.category-summary > div {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #eee6d8;
+  padding: 10px 0;
+  color: #6e675d;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.category-summary > div strong {
+  color: #293d36;
 }
 
 .settings-card {

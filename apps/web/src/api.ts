@@ -41,7 +41,17 @@ export function acceptToday(): Promise<TodayResponse> {
   });
 }
 
-export function addCountProgress(assignmentId: string, amount: number): Promise<TodayResponse> {
+export function replaceToday(): Promise<TodayResponse> {
+  return request('/api/v1/today/replace', todayResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+function addProgress(
+  assignmentId: string,
+  progress: Record<string, unknown>,
+): Promise<TodayResponse> {
   return request(
     '/api/v1/challenges/' + encodeURIComponent(assignmentId) + '/progress-events',
     todayResponseSchema,
@@ -49,14 +59,33 @@ export function addCountProgress(assignmentId: string, amount: number): Promise<
       method: 'POST',
       body: JSON.stringify({
         eventId: crypto.randomUUID(),
-        amount,
         occurredAt: new Date().toISOString(),
+        ...progress,
       }),
     },
   );
 }
 
-export function completeToday(assignmentId: string): Promise<TodayResponse> {
+export function addCountProgress(assignmentId: string, amount: number): Promise<TodayResponse> {
+  return addProgress(assignmentId, { kind: 'count-added', amount });
+}
+
+export function confirmProgress(assignmentId: string): Promise<TodayResponse> {
+  return addProgress(assignmentId, { kind: 'confirmation-recorded' });
+}
+
+export function completeChecklistItem(
+  assignmentId: string,
+  itemId: string,
+): Promise<TodayResponse> {
+  return addProgress(assignmentId, { kind: 'checklist-item-completed', itemId });
+}
+
+export function addTimeProgress(assignmentId: string, seconds: number): Promise<TodayResponse> {
+  return addProgress(assignmentId, { kind: 'time-added', seconds });
+}
+
+export function completeToday(assignmentId: string, reflection?: string): Promise<TodayResponse> {
   return request(
     '/api/v1/challenges/' + encodeURIComponent(assignmentId) + '/complete',
     todayResponseSchema,
@@ -66,13 +95,15 @@ export function completeToday(assignmentId: string): Promise<TodayResponse> {
         completionId: crypto.randomUUID(),
         wallEntryId: crypto.randomUUID(),
         completedAt: new Date().toISOString(),
+        ...(reflection ? { reflection } : {}),
       }),
     },
   );
 }
 
-export function loadWall(signal?: AbortSignal): Promise<WallResponse> {
-  return request('/api/v1/wall', wallResponseSchema, signal ? { signal } : undefined);
+export function loadWall(category?: string, signal?: AbortSignal): Promise<WallResponse> {
+  const query = category ? '?category=' + encodeURIComponent(category) : '';
+  return request('/api/v1/wall' + query, wallResponseSchema, signal ? { signal } : undefined);
 }
 
 export function loadHistory(signal?: AbortSignal): Promise<HistoryResponse> {

@@ -14,7 +14,37 @@ export const counterPolicySchema = z.object({
   kind: z.literal('counter'),
   target: z.number().int().positive(),
   unit: z.string().min(1),
+  increments: z.array(z.number().int().positive()).min(1),
 });
+
+export const confirmationPolicySchema = z.object({
+  kind: z.literal('confirmation'),
+  actionLabel: z.string().min(1),
+  resultLabel: z.string().min(1),
+});
+
+export const checklistItemSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+});
+
+export const checklistPolicySchema = z.object({
+  kind: z.literal('checklist'),
+  items: z.array(checklistItemSchema).min(1),
+});
+
+export const timerPolicySchema = z.object({
+  kind: z.literal('timer'),
+  targetSeconds: z.number().int().positive(),
+  incrementsSeconds: z.array(z.number().int().positive()).min(1),
+});
+
+export const trackingPolicySchema = z.discriminatedUnion('kind', [
+  counterPolicySchema,
+  confirmationPolicySchema,
+  checklistPolicySchema,
+  timerPolicySchema,
+]);
 
 export const challengeDefinitionSchema = z.object({
   id: z.string().min(1),
@@ -25,7 +55,7 @@ export const challengeDefinitionSchema = z.object({
   practicedQualities: z.array(z.string().min(1)),
   expectedMinutes: z.number().int().positive(),
   safetyNote: z.string().min(1).optional(),
-  tracking: counterPolicySchema,
+  tracking: trackingPolicySchema,
 });
 
 export const assignmentStatusSchema = z.enum([
@@ -55,20 +85,66 @@ export const streakStateSchema = z.object({
   lastCompletedLocalDate: z.iso.date().optional(),
 });
 
+export const progressStateSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('counter'),
+    current: z.number().int().nonnegative(),
+    target: z.number().int().positive(),
+    unit: z.string().min(1),
+    increments: z.array(z.number().int().positive()).min(1),
+  }),
+  z.object({
+    kind: z.literal('confirmation'),
+    confirmed: z.boolean(),
+    actionLabel: z.string().min(1),
+  }),
+  z.object({
+    kind: z.literal('checklist'),
+    completedItemIds: z.array(z.string().min(1)),
+    items: z.array(checklistItemSchema).min(1),
+  }),
+  z.object({
+    kind: z.literal('timer'),
+    currentSeconds: z.number().int().nonnegative(),
+    targetSeconds: z.number().int().positive(),
+    incrementsSeconds: z.array(z.number().int().positive()).min(1),
+  }),
+]);
+
 export const todayResponseSchema = z.object({
   development: z.literal(true),
   assignment: dailyAssignmentSchema,
-  progress: z.object({
-    current: z.number().int().nonnegative(),
-    target: z.number().int().positive(),
-  }),
+  progress: progressStateSchema,
+  replacementCount: z.number().int().nonnegative(),
   streak: streakStateSchema,
 });
 
-export const countProgressCommandSchema = z.object({
+const progressEventBase = {
   eventId: z.uuid(),
-  amount: z.number().int().positive(),
   occurredAt: z.iso.datetime(),
+};
+
+export const progressEventCommandSchema = z.discriminatedUnion('kind', [
+  z.object({
+    ...progressEventBase,
+    kind: z.literal('count-added'),
+    amount: z.number().int().positive(),
+  }),
+  z.object({ ...progressEventBase, kind: z.literal('confirmation-recorded') }),
+  z.object({
+    ...progressEventBase,
+    kind: z.literal('checklist-item-completed'),
+    itemId: z.string().min(1),
+  }),
+  z.object({
+    ...progressEventBase,
+    kind: z.literal('time-added'),
+    seconds: z.number().int().positive(),
+  }),
+]);
+
+export const replaceChallengeCommandSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
 });
 
 export const completeChallengeCommandSchema = z.object({
@@ -96,9 +172,17 @@ export const wallResponseSchema = z.object({
   entries: z.array(goodnessEntrySchema),
 });
 
+export const categoryCountsSchema = z.object({
+  body: z.number().int().nonnegative(),
+  character: z.number().int().nonnegative(),
+  community: z.number().int().nonnegative(),
+  creativity: z.number().int().nonnegative(),
+});
+
 export const historyResponseSchema = z.object({
   streak: streakStateSchema,
   completedLocalDates: z.array(z.iso.date()),
+  completionsByCategory: categoryCountsSchema,
 });
 
 export const errorResponseSchema = z.object({
@@ -107,7 +191,8 @@ export const errorResponseSchema = z.object({
 });
 
 export type TodayResponse = z.infer<typeof todayResponseSchema>;
-export type CountProgressCommand = z.infer<typeof countProgressCommandSchema>;
+export type ProgressEventCommand = z.infer<typeof progressEventCommandSchema>;
+export type ReplaceChallengeCommand = z.infer<typeof replaceChallengeCommandSchema>;
 export type CompleteChallengeCommand = z.infer<typeof completeChallengeCommandSchema>;
 export type GoodnessEntryResponse = z.infer<typeof goodnessEntrySchema>;
 export type WallResponse = z.infer<typeof wallResponseSchema>;

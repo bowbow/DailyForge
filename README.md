@@ -17,9 +17,11 @@ system for assigning moral scores.
 
 ## Project status
 
-The repository has completed its initial **product and architecture definition**
-and is ready for a runnable-first implementation. Application and infrastructure
-code have not yet been generated.
+The repository now contains a runnable local vertical slice. The React PWA and
+Fastify API support accepting, replacing, tracking, and completing a challenge,
+then recording it on a private Wall of Goodness. Data is intentionally in memory
+until the durable-storage milestone. See [current build status](docs/STATUS.md)
+for exact capabilities and constraints.
 
 ## Start here
 
@@ -43,7 +45,8 @@ Instructions for coding agents are in [AGENTS.md](AGENTS.md).
 - Installable responsive PWA for a Google Pixel 6 and desktop browsers.
 - Private accounts with cross-device synchronization.
 - One daily challenge drawn from Body, Character, Community, or Creativity.
-- Multiple tracking modes: counter, timer, checklist, and written account.
+- Multiple tracking modes: counter, timer, checklist, and one-time confirmation
+  with an optional private reflection.
 - Self-reporting; the app does not demand proof of a good action.
 - A private Wall of Goodness containing completed challenges.
 - Completion streaks and lifetime totals.
@@ -78,8 +81,16 @@ pnpm format:check
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:e2e
 pnpm build
 pnpm check
+```
+
+`pnpm test:e2e` runs the core flows in desktop Chromium and a Pixel 6-sized
+mobile browser profile. Install the Playwright Chromium runtime once with:
+
+```powershell
+pnpm --filter @daily-forge/web exec playwright install chromium
 ```
 
 The current development data is in memory and resets when the API process

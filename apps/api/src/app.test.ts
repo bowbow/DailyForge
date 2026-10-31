@@ -78,6 +78,7 @@ describe('counter challenge flow', () => {
         url: '/api/v1/challenges/development-assignment-today/progress-events',
         payload: {
           eventId,
+          kind: 'count-added',
           amount,
           occurredAt: fixedNow.toISOString(),
         },
@@ -90,11 +91,15 @@ describe('counter challenge flow', () => {
       url: '/api/v1/challenges/development-assignment-today/progress-events',
       payload: {
         eventId: increments[0][0],
+        kind: 'count-added',
         amount: increments[0][1],
         occurredAt: fixedNow.toISOString(),
       },
     });
-    expect(todayResponseSchema.parse(replay.json()).progress.current).toBe(20);
+    expect(todayResponseSchema.parse(replay.json()).progress).toMatchObject({
+      kind: 'counter',
+      current: 20,
+    });
 
     const completionPayload = {
       completionId: '44444444-4444-4444-8444-444444444444',
@@ -146,6 +151,12 @@ describe('counter challenge flow', () => {
       ).json(),
     );
     expect(history.completedLocalDates).toEqual(['2026-10-30']);
+    expect(history.completionsByCategory).toEqual({
+      body: 1,
+      character: 0,
+      community: 0,
+      creativity: 0,
+    });
   });
 
   it('rejects completion before the target is reached', async () => {
@@ -169,5 +180,42 @@ describe('counter challenge flow', () => {
     expect(response.json()).toMatchObject({
       code: 'target-not-reached',
     });
+  });
+
+  it('cycles through alternative challenge policies before acceptance', async () => {
+    const app = appForTest();
+
+    const firstReplacement = await app.inject({
+      method: 'POST',
+      url: '/api/v1/today/replace',
+      payload: {},
+    });
+    const character = todayResponseSchema.parse(firstReplacement.json());
+    expect(character).toMatchObject({
+      replacementCount: 1,
+      assignment: {
+        status: 'proposed',
+        challenge: { category: 'character', tracking: { kind: 'checklist' } },
+      },
+      progress: { kind: 'checklist', completedItemIds: [] },
+    });
+
+    await app.inject({ method: 'POST', url: '/api/v1/today/replace', payload: {} });
+    const community = todayResponseSchema.parse(
+      (await app.inject({ method: 'POST', url: '/api/v1/today/replace', payload: {} })).json(),
+    );
+    expect(community).toMatchObject({
+      replacementCount: 3,
+      assignment: { challenge: { category: 'creativity', tracking: { kind: 'timer' } } },
+    });
+
+    await app.inject({ method: 'POST', url: '/api/v1/today/accept' });
+    const rejected = await app.inject({
+      method: 'POST',
+      url: '/api/v1/today/replace',
+      payload: {},
+    });
+    expect(rejected.statusCode).toBe(409);
+    expect(rejected.json()).toMatchObject({ code: 'replacement-not-available' });
   });
 });
