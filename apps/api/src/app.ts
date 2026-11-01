@@ -43,17 +43,26 @@ export function buildApp(options: BuildAppOptions = {}) {
 
   app.get('/api/v1/today', () => todayResponseSchema.parse(store.getToday()));
 
-  app.post('/api/v1/today/accept', () => todayResponseSchema.parse(store.accept()));
+  app.post<{ Params: { assignmentId: string } }>(
+    '/api/v1/challenges/:assignmentId/accept',
+    (request) => todayResponseSchema.parse(store.accept(request.params.assignmentId)),
+  );
 
-  app.post('/api/v1/today/replace', (request) => {
-    replaceChallengeCommandSchema.parse(request.body);
-    return todayResponseSchema.parse(store.replace());
-  });
+  app.post<{ Params: { assignmentId: string } }>(
+    '/api/v1/challenges/:assignmentId/replace',
+    (request) => {
+      replaceChallengeCommandSchema.parse(request.body);
+      return todayResponseSchema.parse(store.replace(request.params.assignmentId));
+    },
+  );
 
-  app.post('/api/v1/today/skip', (request) => {
-    skipChallengeCommandSchema.parse(request.body);
-    return todayResponseSchema.parse(store.skip());
-  });
+  app.post<{ Params: { assignmentId: string } }>(
+    '/api/v1/challenges/:assignmentId/skip',
+    (request) => {
+      skipChallengeCommandSchema.parse(request.body);
+      return todayResponseSchema.parse(store.skip(request.params.assignmentId));
+    },
+  );
 
   app.post<{ Params: { assignmentId: string } }>(
     '/api/v1/challenges/:assignmentId/progress-events',

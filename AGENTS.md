@@ -6,10 +6,10 @@ the product, privacy, security, infrastructure, or deployment guardrails here.
 
 ## Repository purpose
 
-Daily Forge is a private progressive web app that presents one constructive
-daily challenge, lets the user track or describe its completion, maintains a
-completion streak, and preserves completed actions on a private Wall of
-Goodness.
+Daily Forge is a private progressive web app that presents a small set of
+constructive daily challenges, normally one in each category, lets the user
+track or describe their completion, maintains a day-based completion streak,
+and preserves completed actions on a private Wall of Goodness.
 
 The app supports four challenge categories:
 
@@ -62,6 +62,10 @@ roadmap or add an ADR when the decision has lasting architectural consequences.
 - Treat volunteer-source terms of service, robots policies, rate limits, and
   attribution requirements as product requirements. Do not scrape a source
   merely because it is technically possible.
+- Use the shared area palette tokens in `apps/web/src/area-theme.css` for
+  category styling. Do not hard-code alternative Body, Character, Community,
+  or Creativity colors in components, and never make color the only category
+  cue.
 
 ## Architecture boundaries
 
@@ -83,6 +87,13 @@ Use the architecture in docs/ARCHITECTURE.md:
 - Make API mutations retry-safe because the PWA may replay queued offline work.
 - Use database migrations for every schema change. Never modify a production
   schema manually.
+- Follow ADR 0006: do not add generative-AI or language-model calls,
+  credentials, model runtimes, or unconstrained generated challenges to the
+  PWA, API, worker, or any production request or scheduling path. AI may assist
+  development or separately initiated offline analysis only.
+- Treat offline AI output as untrusted proposed input. It must be minimized,
+  schema-validated, bounded by deterministic safety rules, tested, reviewed,
+  versioned, auditable, and reversible before it can affect runtime behavior.
 
 When a change crosses these boundaries, add or update an architecture decision
 record under docs/decisions/.
@@ -233,6 +244,10 @@ destructive actions always require their own explicit authorization.
 
 - Do not log reflection text, wall-entry text, credentials, session tokens,
   precise location, or volunteer-related personal details.
+- Do not include private Wall reflections, accounts involving other people,
+  names, precise location, credentials, or unrelated free text in an offline AI
+  export by default. External-AI disclosure of personal data requires an
+  explicit, separately reviewed consent decision.
 - Use HTTPS in all non-local environments.
 - Prefer secure, HttpOnly, SameSite cookies for browser sessions and protect
   state-changing requests from CSRF.

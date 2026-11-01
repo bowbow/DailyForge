@@ -35,24 +35,36 @@ export function loadToday(signal?: AbortSignal): Promise<TodayResponse> {
   return request('/api/v1/today', todayResponseSchema, signal ? { signal } : undefined);
 }
 
-export function acceptToday(): Promise<TodayResponse> {
-  return request('/api/v1/today/accept', todayResponseSchema, {
-    method: 'POST',
-  });
+export function acceptToday(assignmentId: string): Promise<TodayResponse> {
+  return request(
+    '/api/v1/challenges/' + encodeURIComponent(assignmentId) + '/accept',
+    todayResponseSchema,
+    {
+      method: 'POST',
+    },
+  );
 }
 
-export function replaceToday(): Promise<TodayResponse> {
-  return request('/api/v1/today/replace', todayResponseSchema, {
-    method: 'POST',
-    body: JSON.stringify({}),
-  });
+export function replaceToday(assignmentId: string): Promise<TodayResponse> {
+  return request(
+    '/api/v1/challenges/' + encodeURIComponent(assignmentId) + '/replace',
+    todayResponseSchema,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    },
+  );
 }
 
-export function skipToday(): Promise<TodayResponse> {
-  return request('/api/v1/today/skip', todayResponseSchema, {
-    method: 'POST',
-    body: JSON.stringify({}),
-  });
+export function skipToday(assignmentId: string): Promise<TodayResponse> {
+  return request(
+    '/api/v1/challenges/' + encodeURIComponent(assignmentId) + '/skip',
+    todayResponseSchema,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    },
+  );
 }
 
 function addProgress(

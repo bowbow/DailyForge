@@ -112,11 +112,15 @@ export const progressStateSchema = z.discriminatedUnion('kind', [
   }),
 ]);
 
-export const todayResponseSchema = z.object({
-  development: z.literal(true),
+export const todayChallengeSchema = z.object({
   assignment: dailyAssignmentSchema,
   progress: progressStateSchema,
   replacementCount: z.number().int().nonnegative(),
+});
+
+export const todayResponseSchema = z.object({
+  development: z.literal(true),
+  challenges: z.array(todayChallengeSchema).length(4),
   streak: streakStateSchema,
 });
 
@@ -196,6 +200,7 @@ export const errorResponseSchema = z.object({
 });
 
 export type TodayResponse = z.infer<typeof todayResponseSchema>;
+export type TodayChallengeResponse = z.infer<typeof todayChallengeSchema>;
 export type ProgressEventCommand = z.infer<typeof progressEventCommandSchema>;
 export type ReplaceChallengeCommand = z.infer<typeof replaceChallengeCommandSchema>;
 export type CompleteChallengeCommand = z.infer<typeof completeChallengeCommandSchema>;

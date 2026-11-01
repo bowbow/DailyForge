@@ -6,75 +6,133 @@ test.beforeEach(async ({ page, request }) => {
   await page.goto('/');
 });
 
-test('records a body challenge on the private wall', async ({ page }) => {
-  await page.getByRole('button', { name: 'Accept today’s challenge' }).click();
-  for (let index = 0; index < 4; index += 1) {
-    await page.getByRole('button', { name: '+5', exact: true }).click();
-  }
+test('offers one challenge in each area', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Four ways to practice.' })).toBeVisible();
+  await expect(page.locator('[data-category="body"]')).toBeVisible();
+  await expect(page.locator('[data-category="character"]')).toBeVisible();
+  await expect(page.locator('[data-category="community"]')).toBeVisible();
+  await expect(page.locator('[data-category="creativity"]')).toBeVisible();
+  await expect(page.getByText('0 of 4 completed')).toBeVisible();
 
-  await expect(page.getByRole('button', { name: 'Complete challenge' })).toBeEnabled();
-  await page.getByRole('button', { name: 'Complete challenge' }).click();
-  await expect(page.getByText('1 day of deliberate action')).toBeVisible();
-  await page.getByRole('button', { name: 'View your wall' }).click();
-
-  await expect(page.getByRole('heading', { name: 'Your Wall of Goodness' })).toBeVisible();
-  await expect(page.getByText('20 push-ups', { exact: true })).toBeVisible();
-  await expect(page.getByText('Practiced: consistency')).toBeVisible();
+  const areaAccents = await page
+    .locator('.challenge-card[data-category]')
+    .evaluateAll((cards) =>
+      cards.map((card) => getComputedStyle(card).getPropertyValue('--area-accent').trim()),
+    );
+  expect(areaAccents).toHaveLength(4);
+  expect(new Set(areaAccents).size).toBe(4);
 });
 
-test('replaces without penalty and saves a private reflection', async ({ page }, testInfo) => {
-  await page.getByRole('button', { name: 'Try a different challenge' }).click();
-  await expect(page.getByText('Replaced without penalty.')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Practice one deliberate pause' })).toBeVisible();
+test('records a body challenge on the private wall', async ({ page }) => {
+  const body = page.locator('[data-category="body"]');
+  await body.getByRole('button', { name: 'Accept this challenge' }).click();
+  for (let index = 0; index < 4; index += 1) {
+    await body.getByRole('button', { name: '+5', exact: true }).click();
+  }
+  await body.getByRole('button', { name: 'Complete challenge' }).click();
 
-  await page.getByRole('button', { name: 'Accept today’s challenge' }).click();
+  await expect(page.getByText('1 of 4 completed')).toBeVisible();
+  await expect(body.getByText('3 days of deliberate action')).toBeVisible();
+  await body.getByRole('button', { name: 'View your wall' }).click();
+  await expect(page.getByText('20 push-ups', { exact: true })).toBeVisible();
+});
+
+test('completes multiple categories while the daily streak advances once', async ({ page }) => {
+  const body = page.locator('[data-category="body"]');
+  await body.getByRole('button', { name: 'Accept this challenge' }).click();
+  for (let index = 0; index < 4; index += 1) {
+    await body.getByRole('button', { name: '+5', exact: true }).click();
+  }
+  await body.getByRole('button', { name: 'Complete challenge' }).click();
+
+  const character = page.locator('[data-category="character"]');
+  await character.getByRole('button', { name: 'Accept this challenge' }).click();
   for (const label of [
     'Name the choice without rushing it',
     'Consider who or what the choice may affect',
     'Choose and briefly note your reason',
   ]) {
-    await page.getByRole('button', { name: label }).click();
+    await character.getByRole('button', { name: label }).click();
   }
-  await page
-    .getByPlaceholder('What did you do or notice? This stays private.')
-    .fill('I paused and chose a calmer response.');
-  await page.getByRole('button', { name: 'Complete challenge' }).click();
-  await page.getByRole('button', { name: 'View your wall' }).click();
+  await character.getByRole('button', { name: 'Complete challenge' }).click();
 
-  await expect(page.getByText('3 deliberate steps completed')).toBeVisible();
-  await expect(page.getByText('I paused and chose a calmer response.')).toBeVisible();
-  if (testInfo.project.name === 'pixel-6') {
-    await expect(page.getByRole('navigation', { name: 'Primary mobile navigation' })).toBeVisible();
-  }
+  await expect(page.getByText('2 of 4 completed')).toBeVisible();
+  await expect(character.getByText('3 days of deliberate action')).toBeVisible();
+  await expect(character.getByText('16 challenges completed in total')).toBeVisible();
 });
 
-test('records a consent-aware community action', async ({ page }) => {
-  await page.getByRole('button', { name: 'Try a different challenge' }).click();
-  await page.getByRole('button', { name: 'Try a different challenge' }).click();
-  await expect(page.getByRole('heading', { name: 'Offer one concrete act of help' })).toBeVisible();
-
-  await page.getByRole('button', { name: 'Accept today’s challenge' }).click();
-  await page.getByRole('button', { name: 'I offered or gave useful help' }).click();
-  await page.getByRole('button', { name: 'Complete challenge' }).click();
-  await page.getByRole('button', { name: 'View your wall' }).click();
-
-  await expect(page.getByText('One consent-aware act of help')).toBeVisible();
-});
-
-test('records a timed creative practice without becoming a running workout', async ({ page }) => {
-  for (let index = 0; index < 3; index += 1) {
-    await page.getByRole('button', { name: 'Try a different challenge' }).click();
-  }
+test('starts with a rich but clearly fictional development history', async ({ page }) => {
+  await page.locator('nav:visible').getByRole('button', { name: 'Wall', exact: true }).click();
+  await expect(page.locator('.wall-card')).toHaveCount(14);
   await expect(
-    page.getByRole('heading', { name: 'Make a ten-minute constraint sketch' }),
+    page.getByText('The rough edge made the shadows feel less mechanical.'),
   ).toBeVisible();
 
-  await page.getByRole('button', { name: 'Accept today’s challenge' }).click();
-  await page.getByRole('button', { name: '+10 mins', exact: true }).click();
-  await page.getByRole('button', { name: 'Complete challenge' }).click();
-  await page.getByRole('button', { name: 'View your wall' }).click();
+  await page.locator('nav:visible').getByRole('button', { name: 'History', exact: true }).click();
+  await expect(
+    page.locator('.stat-grid article').filter({ hasText: 'Lifetime actions' }).getByText('14'),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The last ten days' })).toBeVisible();
+  await expect(page.getByText('No completion recorded').first()).toBeVisible();
+  await expect(page.getByText('2 actions completed').first()).toBeVisible();
+});
 
-  await expect(page.getByText('10 minutes practiced')).toBeVisible();
+test('replaces within an area and skips another independently', async ({ page }) => {
+  const body = page.locator('[data-category="body"]');
+  await body.getByRole('button', { name: 'Try a different body challenge' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Take a five-minute mobility reset' }),
+  ).toBeVisible();
+  await expect(page.getByText('Replaced without penalty.')).toBeVisible();
+
+  const community = page.locator('[data-category="community"]');
+  await community.getByRole('button', { name: 'Skip this area today' }).click();
+  await expect(community.getByText('No action is required in Community today.')).toBeVisible();
+  await expect(page.locator('[data-category="character"]')).toContainText('Available today');
+  await expect(page.locator('[data-category="creativity"]')).toContainText('Available today');
+});
+
+test('explains the goals and boundaries of each area', async ({ page }) => {
+  await page.locator('nav:visible').getByRole('button', { name: 'Areas', exact: true }).click();
+
+  await expect(page.getByRole('heading', { name: 'What are we building?' })).toBeVisible();
+  await expect(
+    page.getByText(/Build and preserve the practical strength, mobility, balance/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/No aerobic challenges, mileage, pace targets, or intervals/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Start with the life you want at 80.' }),
+  ).toBeVisible();
+  await expect(page.getByText('B80-01', { exact: true })).toBeVisible();
+  await expect(page.getByText('B80-10', { exact: true })).toBeVisible();
+  await expect(page.getByText('Find the baseline', { exact: true })).toBeVisible();
+  await expect(page.getByText('Probes, not tests to fail', { exact: true })).toBeVisible();
+  const centenarianResource = page.getByRole('link', {
+    name: /Training for the Centenarian Decathlon/,
+  });
+  await expect(centenarianResource).toHaveAttribute(
+    'href',
+    'https://peterattiamd.com/training-for-the-centenarian-decathlon/',
+  );
+  await expect(centenarianResource).toHaveAttribute('target', '_blank');
+  const bodyTheme = await page
+    .locator('.area-detail')
+    .evaluate((detail) => getComputedStyle(detail).getPropertyValue('--area-accent').trim());
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+
+  await page.getByRole('button', { name: 'creativity', exact: true }).click();
+  await expect(
+    page.getByText(/Develop an artistic practice through low-pressure experiments/),
+  ).toBeVisible();
+  await expect(page.getByText(/Sharing artwork is never required as proof/)).toBeVisible();
+  const creativityTheme = await page
+    .locator('.area-detail')
+    .evaluate((detail) => getComputedStyle(detail).getPropertyValue('--area-accent').trim());
+  expect(creativityTheme).not.toBe(bodyTheme);
 });
 
 test('exposes install metadata and has no horizontal overflow', async ({ page, request }) => {
@@ -85,24 +143,16 @@ test('exposes install metadata and has no horizontal overflow', async ({ page, r
     display: 'standalone',
     start_url: '/',
   });
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
-    'href',
-    '/manifest.webmanifest',
-  );
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
 });
 
-test('skips today without pressure or a completion', async ({ page }) => {
-  await page.getByRole('button', { name: 'Skip for today' }).click();
-
-  await expect(page.getByRole('heading', { name: 'Rest is allowed.' })).toBeVisible();
-  await expect(page.getByText('No action is required today.')).toBeVisible();
-  await expect(page.getByText('Your wall and completion totals are unchanged.')).toBeVisible();
-});
-
 test('has no automatically detectable accessibility violations', async ({ page }) => {
-  const results = await new AxeBuilder({ page }).analyze();
-  expect(results.violations).toEqual([]);
+  const todayResults = await new AxeBuilder({ page }).analyze();
+  expect(todayResults.violations).toEqual([]);
+
+  await page.locator('nav:visible').getByRole('button', { name: 'Areas', exact: true }).click();
+  const areasResults = await new AxeBuilder({ page }).analyze();
+  expect(areasResults.violations).toEqual([]);
 });

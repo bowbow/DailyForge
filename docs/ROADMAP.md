@@ -17,7 +17,8 @@ processes, even before the product slice is complete.
 
 ## Phase 1: Runnable challenge slice
 
-- Responsive PWA shell with Today, Wall, History, and Settings destinations.
+- Responsive PWA shell with Today, Areas, Wall, History, and Settings
+  destinations.
 - API health endpoint.
 - One fictional user in local development only.
 - Shared domain package imported by both web and API.
@@ -42,6 +43,8 @@ double-count a replayed progress event.
 ## Phase 3: Product MVP
 
 - Versioned challenge catalog and four categories.
+- Up to one independently actionable daily assignment per category, with area
+  goals and boundaries visible to the user.
 - Counter, timer, checklist, and written-account tracking.
 - Accept, replace, skip, and complete.
 - Transactional completion and wall-entry creation.

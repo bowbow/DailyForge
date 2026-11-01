@@ -11,6 +11,7 @@ discussion for current direction.
 - [0003 — Provision the initial AWS host with Terraform and a durable Elastic IP](0003-terraform-ec2-elastic-ip.md)
 - [0004 — Keep the Wall of Goodness private](0004-private-wall-of-goodness.md)
 - [0005 — Adopt the initial TypeScript application stack](0005-typescript-application-stack.md)
+- [0006 — Keep generative AI out of the application runtime](0006-no-generative-ai-at-runtime.md)
 
 ## Status values
 

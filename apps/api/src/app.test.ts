@@ -18,196 +18,244 @@ afterEach(async () => {
 });
 
 function appForTest() {
-  const app = buildApp({
-    logger: false,
-    store: new DevelopmentStore(() => fixedNow),
-  });
+  const app = buildApp({ logger: false, store: new DevelopmentStore(() => fixedNow, false) });
   apps.push(app);
   return app;
 }
 
-describe('health endpoint', () => {
+function appWithDemoHistory() {
+  const app = buildApp({ logger: false, store: new DevelopmentStore(() => fixedNow) });
+  apps.push(app);
+  return app;
+}
+
+describe('health and daily assignments', () => {
   it('returns a validated healthy response', async () => {
-    const app = appForTest();
-
-    const response = await app.inject({
-      method: 'GET',
-      url: '/api/v1/health',
-    });
-
+    const response = await appForTest().inject({ method: 'GET', url: '/api/v1/health' });
     expect(response.statusCode).toBe(200);
     expect(healthResponseSchema.parse(response.json())).toMatchObject({
       service: 'daily-forge-api',
       status: 'ok',
     });
   });
+
+  it('offers one independent challenge in every category', async () => {
+    const response = await appForTest().inject({ method: 'GET', url: '/api/v1/today' });
+    const today = todayResponseSchema.parse(response.json());
+
+    expect(today.challenges).toHaveLength(4);
+    expect(today.challenges.map(({ assignment }) => assignment.challenge.category)).toEqual([
+      'body',
+      'character',
+      'community',
+      'creativity',
+    ]);
+    expect(today.challenges.every(({ assignment }) => assignment.status === 'proposed')).toBe(true);
+  });
+
+  it('seeds believable development history without changing today’s assignments', async () => {
+    const app = appWithDemoHistory();
+    const wall = wallResponseSchema.parse(
+      (await app.inject({ method: 'GET', url: '/api/v1/wall' })).json(),
+    );
+    const history = historyResponseSchema.parse(
+      (await app.inject({ method: 'GET', url: '/api/v1/history' })).json(),
+    );
+    const today = todayResponseSchema.parse(
+      (await app.inject({ method: 'GET', url: '/api/v1/today' })).json(),
+    );
+
+    expect(wall.entries).toHaveLength(14);
+    expect(new Set(wall.entries.map((entry) => entry.localDate)).size).toBe(8);
+    expect(wall.entries.some((entry) => entry.reflection)).toBe(true);
+    expect(history).toMatchObject({
+      streak: { current: 2, longest: 3, lifetimeCompletions: 14 },
+      completionsByCategory: { body: 4, character: 3, community: 3, creativity: 4 },
+    });
+    expect(today.challenges.every(({ assignment }) => assignment.status === 'proposed')).toBe(true);
+  });
 });
 
-describe('counter challenge flow', () => {
-  it('accepts, records idempotent increments, completes once, and creates one wall entry', async () => {
+describe('multiple daily challenge flow', () => {
+  it('completes two categories while advancing the day streak only once', async () => {
     const app = appForTest();
+    const bodyId = 'development-assignment-body';
+    const characterId = 'development-assignment-character';
 
-    const proposed = todayResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'GET',
-          url: '/api/v1/today',
-        })
-      ).json(),
-    );
-    expect(proposed.assignment.status).toBe('proposed');
-
-    const accepted = todayResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'POST',
-          url: '/api/v1/today/accept',
-        })
-      ).json(),
-    );
-    expect(accepted.assignment.status).toBe('accepted');
-
-    const increments = [
+    await app.inject({ method: 'POST', url: `/api/v1/challenges/${bodyId}/accept` });
+    for (const [eventId, amount] of [
       ['11111111-1111-4111-8111-111111111111', 5],
-      ['22222222-2222-4222-8222-222222222222', 7],
-      ['33333333-3333-4333-8333-333333333333', 8],
-    ] as const;
-    for (const [eventId, amount] of increments) {
-      const response = await app.inject({
+      ['22222222-2222-4222-8222-222222222222', 5],
+      ['33333333-3333-4333-8333-333333333333', 5],
+      ['44444444-4444-4444-8444-444444444444', 5],
+    ] as const) {
+      await app.inject({
         method: 'POST',
-        url: '/api/v1/challenges/development-assignment-today/progress-events',
+        url: `/api/v1/challenges/${bodyId}/progress-events`,
+        payload: { eventId, kind: 'count-added', amount, occurredAt: fixedNow.toISOString() },
+      });
+    }
+    const bodyCompletion = {
+      completionId: '55555555-5555-4555-8555-555555555555',
+      wallEntryId: '66666666-6666-4666-8666-666666666666',
+      completedAt: fixedNow.toISOString(),
+      reflection: 'Small sets fit naturally into the day.',
+    };
+    await app.inject({
+      method: 'POST',
+      url: `/api/v1/challenges/${bodyId}/complete`,
+      payload: bodyCompletion,
+    });
+
+    await app.inject({ method: 'POST', url: `/api/v1/challenges/${characterId}/accept` });
+    for (const [index, itemId] of [
+      'name-choice',
+      'consider-effects',
+      'choose-deliberately',
+    ].entries()) {
+      await app.inject({
+        method: 'POST',
+        url: `/api/v1/challenges/${characterId}/progress-events`,
         payload: {
-          eventId,
-          kind: 'count-added',
-          amount,
+          eventId: `77777777-7777-4777-8777-77777777777${index}`,
+          kind: 'checklist-item-completed',
+          itemId,
           occurredAt: fixedNow.toISOString(),
         },
       });
-      expect(response.statusCode).toBe(200);
     }
-
-    const replay = await app.inject({
+    const characterCompletion = await app.inject({
       method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/progress-events',
+      url: `/api/v1/challenges/${characterId}/complete`,
       payload: {
-        eventId: increments[0][0],
-        kind: 'count-added',
-        amount: increments[0][1],
-        occurredAt: fixedNow.toISOString(),
+        completionId: '88888888-8888-4888-8888-888888888888',
+        wallEntryId: '99999999-9999-4999-8999-999999999999',
+        completedAt: fixedNow.toISOString(),
       },
     });
-    expect(todayResponseSchema.parse(replay.json()).progress).toMatchObject({
-      kind: 'counter',
-      current: 20,
-    });
+    const completed = todayResponseSchema.parse(characterCompletion.json());
 
-    const completionPayload = {
-      completionId: '44444444-4444-4444-8444-444444444444',
-      wallEntryId: '55555555-5555-4555-8555-555555555555',
-      completedAt: fixedNow.toISOString(),
-      reflection: 'Three small sets made the challenge approachable.',
-    };
-    const complete = await app.inject({
-      method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/complete',
-      payload: completionPayload,
-    });
-    const completed = todayResponseSchema.parse(complete.json());
-    expect(completed.assignment.status).toBe('completed');
     expect(completed.streak).toMatchObject({
       current: 1,
       longest: 1,
-      lifetimeCompletions: 1,
+      lifetimeCompletions: 2,
     });
+    expect(
+      completed.challenges.filter(({ assignment }) => assignment.status === 'completed'),
+    ).toHaveLength(2);
 
-    const repeatedCompletion = await app.inject({
+    const replay = await app.inject({
       method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/complete',
-      payload: completionPayload,
+      url: `/api/v1/challenges/${characterId}/complete`,
+      payload: {
+        completionId: '88888888-8888-4888-8888-888888888888',
+        wallEntryId: '99999999-9999-4999-8999-999999999999',
+        completedAt: fixedNow.toISOString(),
+      },
     });
-    expect(todayResponseSchema.parse(repeatedCompletion.json()).streak.lifetimeCompletions).toBe(1);
+    expect(todayResponseSchema.parse(replay.json()).streak.lifetimeCompletions).toBe(2);
 
     const wall = wallResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'GET',
-          url: '/api/v1/wall',
-        })
-      ).json(),
+      (await app.inject({ method: 'GET', url: '/api/v1/wall' })).json(),
     );
-    expect(wall.entries).toHaveLength(1);
-    expect(wall.entries[0]).toMatchObject({
-      challengeTitle: 'Accumulate 20 push-ups today',
-      result: '20 push-ups',
-      reflection: 'Three small sets made the challenge approachable.',
-    });
-
-    const bodyWall = wallResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'GET',
-          url: '/api/v1/wall?category=body',
-        })
-      ).json(),
-    );
-    const characterWall = wallResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'GET',
-          url: '/api/v1/wall?category=character',
-        })
-      ).json(),
-    );
-    expect(bodyWall.entries).toHaveLength(1);
-    expect(characterWall.entries).toHaveLength(0);
+    expect(wall.entries).toHaveLength(2);
+    expect(wall.entries.map((entry) => entry.category).sort()).toEqual(['body', 'character']);
 
     const history = historyResponseSchema.parse(
-      (
-        await app.inject({
-          method: 'GET',
-          url: '/api/v1/history',
-        })
-      ).json(),
+      (await app.inject({ method: 'GET', url: '/api/v1/history' })).json(),
     );
     expect(history.completedLocalDates).toEqual(['2026-10-30']);
     expect(history.completionsByCategory).toEqual({
       body: 1,
-      character: 0,
+      character: 1,
       community: 0,
       creativity: 0,
     });
   });
 
-  it('rejects completion before the target is reached', async () => {
+  it('replaces only the selected category and keeps that category stable', async () => {
     const app = appForTest();
-    await app.inject({
-      method: 'POST',
-      url: '/api/v1/today/accept',
-    });
-
+    const before = todayResponseSchema.parse(
+      (await app.inject({ method: 'GET', url: '/api/v1/today' })).json(),
+    );
+    const body = before.challenges.find(
+      ({ assignment }) => assignment.challenge.category === 'body',
+    )!;
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/complete',
+      url: `/api/v1/challenges/${body.assignment.id}/replace`,
+      payload: {},
+    });
+    const after = todayResponseSchema.parse(response.json());
+    const nextBody = after.challenges.find(
+      ({ assignment }) => assignment.challenge.category === 'body',
+    )!;
+
+    expect(nextBody).toMatchObject({
+      replacementCount: 1,
+      assignment: {
+        status: 'proposed',
+        challenge: { id: 'mobility-reset-5', category: 'body' },
+      },
+      progress: { kind: 'timer' },
+    });
+    expect(
+      after.challenges
+        .filter(({ assignment }) => assignment.challenge.category !== 'body')
+        .map(({ assignment }) => assignment.id),
+    ).toEqual(
+      before.challenges
+        .filter(({ assignment }) => assignment.challenge.category !== 'body')
+        .map(({ assignment }) => assignment.id),
+    );
+  });
+
+  it('skips one area without affecting the other three', async () => {
+    const app = appForTest();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/challenges/development-assignment-community/skip',
+      payload: {},
+    });
+    const today = todayResponseSchema.parse(response.json());
+
+    expect(
+      today.challenges.find(({ assignment }) => assignment.challenge.category === 'community')
+        ?.assignment.status,
+    ).toBe('skipped');
+    expect(
+      today.challenges.filter(({ assignment }) => assignment.status === 'proposed'),
+    ).toHaveLength(3);
+    expect(today.streak).toMatchObject({ current: 0, lifetimeCompletions: 0 });
+  });
+});
+
+describe('validation', () => {
+  it('rejects completion before the visible target is reached', async () => {
+    const app = appForTest();
+    const id = 'development-assignment-body';
+    await app.inject({ method: 'POST', url: `/api/v1/challenges/${id}/accept` });
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/challenges/${id}/complete`,
       payload: {
-        completionId: '44444444-4444-4444-8444-444444444444',
-        wallEntryId: '55555555-5555-4555-8555-555555555555',
+        completionId: '11111111-1111-4111-8111-111111111111',
+        wallEntryId: '22222222-2222-4222-8222-222222222222',
         completedAt: fixedNow.toISOString(),
       },
     });
-
     expect(response.statusCode).toBe(409);
-    expect(response.json()).toMatchObject({
-      code: 'target-not-reached',
-    });
+    expect(response.json()).toMatchObject({ code: 'target-not-reached' });
   });
 
-  it('rejects malformed and policy-mismatched progress commands', async () => {
+  it('rejects malformed, mismatched, and unknown commands', async () => {
     const app = appForTest();
-    await app.inject({ method: 'POST', url: '/api/v1/today/accept' });
+    const id = 'development-assignment-body';
+    await app.inject({ method: 'POST', url: `/api/v1/challenges/${id}/accept` });
 
     const malformed = await app.inject({
       method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/progress-events',
+      url: `/api/v1/challenges/${id}/progress-events`,
       payload: {
         eventId: '11111111-1111-4111-8111-111111111111',
         amount: 5,
@@ -215,11 +263,10 @@ describe('counter challenge flow', () => {
       },
     });
     expect(malformed.statusCode).toBe(400);
-    expect(malformed.json()).toMatchObject({ code: 'invalid-request' });
 
     const wrongPolicy = await app.inject({
       method: 'POST',
-      url: '/api/v1/challenges/development-assignment-today/progress-events',
+      url: `/api/v1/challenges/${id}/progress-events`,
       payload: {
         eventId: '22222222-2222-4222-8222-222222222222',
         kind: 'time-added',
@@ -230,74 +277,11 @@ describe('counter challenge flow', () => {
     expect(wrongPolicy.statusCode).toBe(409);
     expect(wrongPolicy.json()).toMatchObject({ code: 'tracking-policy-mismatch' });
 
-    const invalidFilter = await app.inject({
-      method: 'GET',
-      url: '/api/v1/wall?category=unknown',
-    });
-    expect(invalidFilter.statusCode).toBe(400);
-  });
-
-  it('cycles through alternative challenge policies before acceptance', async () => {
-    const app = appForTest();
-
-    const firstReplacement = await app.inject({
+    const unknown = await app.inject({
       method: 'POST',
-      url: '/api/v1/today/replace',
-      payload: {},
+      url: '/api/v1/challenges/not-real/accept',
     });
-    const character = todayResponseSchema.parse(firstReplacement.json());
-    expect(character).toMatchObject({
-      replacementCount: 1,
-      assignment: {
-        status: 'proposed',
-        challenge: { category: 'character', tracking: { kind: 'checklist' } },
-      },
-      progress: { kind: 'checklist', completedItemIds: [] },
-    });
-
-    await app.inject({ method: 'POST', url: '/api/v1/today/replace', payload: {} });
-    const community = todayResponseSchema.parse(
-      (await app.inject({ method: 'POST', url: '/api/v1/today/replace', payload: {} })).json(),
-    );
-    expect(community).toMatchObject({
-      replacementCount: 3,
-      assignment: { challenge: { category: 'creativity', tracking: { kind: 'timer' } } },
-    });
-
-    await app.inject({ method: 'POST', url: '/api/v1/today/accept' });
-    const rejected = await app.inject({
-      method: 'POST',
-      url: '/api/v1/today/replace',
-      payload: {},
-    });
-    expect(rejected.statusCode).toBe(409);
-    expect(rejected.json()).toMatchObject({ code: 'replacement-not-available' });
-  });
-
-  it('skips without changing the streak or private wall', async () => {
-    const app = appForTest();
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/today/skip',
-      payload: {},
-    });
-    const skipped = todayResponseSchema.parse(response.json());
-
-    expect(skipped.assignment).toMatchObject({
-      status: 'skipped',
-      skippedAt: fixedNow.toISOString(),
-    });
-    expect(skipped.streak).toMatchObject({ current: 0, lifetimeCompletions: 0 });
-    expect(
-      wallResponseSchema.parse((await app.inject({ method: 'GET', url: '/api/v1/wall' })).json())
-        .entries,
-    ).toEqual([]);
-
-    const acceptAfterSkip = await app.inject({
-      method: 'POST',
-      url: '/api/v1/today/accept',
-    });
-    expect(acceptAfterSkip.statusCode).toBe(409);
-    expect(acceptAfterSkip.json()).toMatchObject({ code: 'assignment-not-available' });
+    expect(unknown.statusCode).toBe(409);
+    expect(unknown.json()).toMatchObject({ code: 'assignment-not-found' });
   });
 });

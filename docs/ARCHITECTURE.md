@@ -54,7 +54,7 @@ The domain layer has no UI, database, HTTP, Node, browser, or AWS dependencies.
 
 Use cases that coordinate domain objects and ports:
 
-- Assign today's challenge.
+- Assign today's challenges, with at most one active assignment per category.
 - Accept, replace, or skip a challenge.
 - Record progress.
 - Complete a challenge.
@@ -123,9 +123,9 @@ Illustrative endpoints:
 
 ```text
 GET    /api/v1/today
-POST   /api/v1/today/accept
-POST   /api/v1/today/replace
-POST   /api/v1/today/skip
+POST   /api/v1/challenges/{assignmentId}/accept
+POST   /api/v1/challenges/{assignmentId}/replace
+POST   /api/v1/challenges/{assignmentId}/skip
 POST   /api/v1/challenges/{assignmentId}/progress-events
 POST   /api/v1/challenges/{assignmentId}/complete
 GET    /api/v1/wall
@@ -229,6 +229,21 @@ Do not record:
 - Session tokens or credentials.
 - Names or details about people helped.
 - Precise user location.
+
+## AI boundary
+
+ADR 0006 keeps generative AI outside the application runtime. The PWA, API, and
+worker use deterministic, versioned challenge definitions, capability state,
+progression ladders, safety constraints, and selection rules. They do not call
+or require a model service.
+
+AI may assist normal development and may analyze an explicitly exported,
+minimized set of structured observations in a separately initiated offline
+workflow. Such analysis can only propose versioned program or user-plan
+artifacts. Proposals are untrusted until they pass schema validation, hard
+safety constraints, tests and historical replay, human review, and an auditable
+approval and publication step. AI cannot write directly to production or
+weaken runtime safety rules.
 
 ## Evolution path
 

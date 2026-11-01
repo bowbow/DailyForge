@@ -82,6 +82,20 @@ Never log:
 Use stable error codes and redacted structured fields. Production error reports
 must be reviewed for accidental sensitive payload capture.
 
+## Offline AI analysis
+
+Generative AI is not part of the application runtime. If a separately initiated
+offline analysis is used under ADR 0006, its dataset must be constructed from an
+explicit allow-list and minimized to the analysis purpose. Private reflections,
+accounts involving other people, names, precise location, credentials, and
+unrelated free text are excluded by default.
+
+The export, recipient, retention, deletion, and approval path must be documented
+before real personal data is used. Sending personal information to an external
+AI provider requires an explicit disclosure and consent decision. AI output is
+treated as untrusted and cannot directly update production state or loosen
+safety controls.
+
 ## Notifications
 
 Lock-screen notifications can expose information. Default notification text

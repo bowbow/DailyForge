@@ -254,7 +254,10 @@ export function progressIsComplete(progress: ProgressState): boolean {
 
 export function advanceStreak(streak: StreakState, localDate: string): StreakState {
   if (streak.lastCompletedLocalDate === localDate) {
-    return streak;
+    return {
+      ...streak,
+      lifetimeCompletions: streak.lifetimeCompletions + 1,
+    };
   }
 
   const isConsecutive =

@@ -2,8 +2,9 @@
 
 ## Product statement
 
-Daily Forge helps a person become more deliberate through one achievable daily
-challenge and a private record of the constructive actions they have completed.
+Daily Forge helps a person become more deliberate through a small set of
+achievable daily challenges and a private record of the constructive actions
+they have completed.
 
 It is designed for someone interested in:
 
@@ -16,8 +17,9 @@ It is designed for someone interested in:
 
 ## Core loop
 
-1. **Receive:** The user sees one challenge for their local day.
-2. **Choose:** The user accepts it, requests a suitable replacement, or skips.
+1. **Receive:** The user sees up to one challenge in each category for their
+   local day.
+2. **Choose:** The user independently accepts, replaces, or skips any of them.
 3. **Act:** The user performs the activity in the real world.
 4. **Track:** The user records increments, time, checklist items, or an account
    of what they did.
@@ -126,9 +128,12 @@ visible.
 
 ## Completion and streaks
 
-- A challenge is complete when its published completion policy is satisfied.
+- Each challenge is complete when its published completion policy is satisfied.
 - A completion belongs to the user's local calendar day.
-- Completing the day's challenge extends the current streak.
+- Completing any challenge extends the day-based streak. Further challenges
+  completed on the same date increase lifetime and category totals without
+  extending the streak again.
+- The user is not required to complete every category to preserve the streak.
 - Missing a day ends the current streak but never removes wall entries, lifetime
   totals, or the longest-streak record.
 - Replacement and skip behavior must be honest and non-punitive.
@@ -156,7 +161,7 @@ The first usable release should provide:
 
 - Private account access.
 - Preference and safety onboarding.
-- One assigned daily challenge.
+- Up to one assigned daily challenge per category.
 - Accept, replace, and skip actions.
 - Counter, timer, checklist, and written-account tracking.
 - Completion with an optional reflection.

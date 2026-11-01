@@ -1,21 +1,42 @@
 # Build status
 
-- Last updated: 2026-10-30
-- Active milestone: Extended Autonomous Run 1 — complete
-- State: Runnable local product slice and quality hardening complete
-- Last stable checkpoint: Accessible, multi-policy local PWA loop
+- Last updated: 2026-10-31
+- Active milestone: Feedback iteration — multi-challenge day and area guidance
+- State: Implemented and verified locally; awaiting user review
+- Last stable checkpoint: Accessible four-area daily PWA loop
 
 ## What works now
 
+- Evidence review for Body challenge design, covering healthy-ageing
+  capabilities, strength, muscle power, balance, mobility, bone loading, safety
+  tiers, age-80 outcomes, thirteen age-60 reserve targets, sixty-one linked
+  baseline probes, and candidate challenge families.
 - pnpm workspace with web, API, domain, and contract packages.
-- React/Vite shell with Today, Wall, History, and Settings views.
+- React/Vite shell with Today, Areas, Wall, History, and Settings views.
 - Responsive desktop/sidebar and phone/bottom-navigation styles.
+- Configurable Body, Character, Community, and Creativity palettes applied
+  consistently to challenge cards, Area guides, Wall entries, filters, and
+  history summaries without relying on color as the only category cue.
 - Fastify health endpoint proxied through the web development server.
 - Pure domain model for accepting, incrementing, and completing counter
   challenges with idempotent progress events.
-- Validated API contracts and in-memory application store for today's
-  challenge, streak, wall, history, and development reset.
-- Working 20-push-up flow from acceptance through private wall entry.
+- Validated API contracts and in-memory application store for today's four
+  category challenges, streak, wall, history, and development reset.
+- Four independently actionable daily challenge cards, normally one for Body,
+  Character, Community, and Creativity.
+- Working multi-completion flow from acceptance through private wall entries,
+  with one streak day and a lifetime count for every completed challenge.
+- Static desktop category summaries and a dedicated, mobile-accessible Areas
+  view that explains each area's goal, expected challenges, examples, and
+  boundaries without redundant “Learn more” controls.
+- Expanded Body guide showing all ten draft B80 outcomes and the B80-to-B60,
+  baseline-probe, and conservative-progression approach.
+- Optional first-party Peter Attia video, podcast, and show-note links provide
+  background on the Centenarian Decathlon, longevity-focused exercise, and
+  preserving strength and muscle.
+- Fictional development history with fourteen completed actions, reflections,
+  category totals, streak context, and visible quiet days. Reset restores this
+  demo state while leaving today's four challenges fresh.
 - Curated Body, Character, Community, and Creativity development catalog.
 - Counter, checklist, one-time confirmation, and time tracking policies.
 - No-penalty replacement before acceptance and optional private reflection.
@@ -45,19 +66,23 @@
   completion, streak, and private-wall journey.
 - Playwright verifies the counter and checklist/reflection journeys in desktop
   Chromium and a Pixel 6-sized mobile profile.
-- Fourteen Playwright cases cover all four tracking policies, replacement,
-  skip, install metadata, horizontal overflow, and automated accessibility
-  scans across both browser profiles.
+- Sixteen Playwright cases cover four simultaneous category cards, seeded
+  history,
+  multi-completion streak behavior, category-scoped replacement, independent
+  skip, Areas content, install metadata, horizontal overflow, and automated
+  accessibility scans across desktop and Pixel 6 profiles.
 - The initial automated accessibility scan found muted text below WCAG AA
   contrast; the palette was corrected and the scan now reports no violations.
-- Seven contract, eight domain, and six API integration tests cover validated
-  commands, completion invariants, malformed input, wall filtering, skip, and
-  replacement behavior.
+- Seven contract, eight domain, and eight API integration tests cover validated
+  commands, same-day completion invariants, malformed input, wall filtering,
+  category-scoped skip, and replacement behavior.
 
 ## Current assumptions
 
 - The first build uses an in-memory server adapter.
-- The first seeded challenge is a 20-push-up counter.
+- The development day contains one seeded challenge per category.
+- Completing any one challenge extends the daily streak; additional distinct
+  completions on that date increase lifetime and category totals.
 - Local development uses a fictional user and resettable data.
 - PostgreSQL begins in Milestone 2.
 - Production authentication begins no later than Milestone 4 and must exist

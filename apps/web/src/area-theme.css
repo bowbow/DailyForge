@@ -1,0 +1,98 @@
+/*
+ * Daily Forge area palette
+ *
+ * Change area colors here rather than in component styles. Each palette has a
+ * strong foreground, a primary accent, and progressively quieter surfaces.
+ * Text labels and icons remain present so color is never the only area cue.
+ */
+:root {
+  --area-on-accent: #fffdf8;
+
+  --area-body-accent: #a13f35;
+  --area-body-strong: #6f2923;
+  --area-body-soft: #f2d5d0;
+  --area-body-wash: #fff7f5;
+  --area-body-border: #dba39b;
+  --area-body-rgb: 161 63 53;
+
+  --area-character-accent: #7351a5;
+  --area-character-strong: #503576;
+  --area-character-soft: #e9def3;
+  --area-character-wash: #faf7fd;
+  --area-character-border: #cbb8df;
+  --area-character-rgb: 115 81 165;
+
+  --area-community-accent: #2f7646;
+  --area-community-strong: #205331;
+  --area-community-soft: #d8eadc;
+  --area-community-wash: #f5fbf6;
+  --area-community-border: #a4cbaa;
+  --area-community-rgb: 47 118 70;
+
+  --area-creativity-accent: #236aa5;
+  --area-creativity-strong: #174b77;
+  --area-creativity-soft: #d7e7f4;
+  --area-creativity-wash: #f5faff;
+  --area-creativity-border: #9fc4df;
+  --area-creativity-rgb: 35 106 165;
+}
+
+.category-dot--body,
+.category-pill--body,
+.category-note--body,
+.area-tab--body,
+.filter-chip--body,
+.area-detail--body,
+[data-category='body'] {
+  --area-accent: var(--area-body-accent);
+  --area-strong: var(--area-body-strong);
+  --area-soft: var(--area-body-soft);
+  --area-wash: var(--area-body-wash);
+  --area-border: var(--area-body-border);
+  --area-rgb: var(--area-body-rgb);
+}
+
+.category-dot--character,
+.category-pill--character,
+.category-note--character,
+.area-tab--character,
+.filter-chip--character,
+.area-detail--character,
+[data-category='character'] {
+  --area-accent: var(--area-character-accent);
+  --area-strong: var(--area-character-strong);
+  --area-soft: var(--area-character-soft);
+  --area-wash: var(--area-character-wash);
+  --area-border: var(--area-character-border);
+  --area-rgb: var(--area-character-rgb);
+}
+
+.category-dot--community,
+.category-pill--community,
+.category-note--community,
+.area-tab--community,
+.filter-chip--community,
+.area-detail--community,
+[data-category='community'] {
+  --area-accent: var(--area-community-accent);
+  --area-strong: var(--area-community-strong);
+  --area-soft: var(--area-community-soft);
+  --area-wash: var(--area-community-wash);
+  --area-border: var(--area-community-border);
+  --area-rgb: var(--area-community-rgb);
+}
+
+.category-dot--creativity,
+.category-pill--creativity,
+.category-note--creativity,
+.area-tab--creativity,
+.filter-chip--creativity,
+.area-detail--creativity,
+[data-category='creativity'] {
+  --area-accent: var(--area-creativity-accent);
+  --area-strong: var(--area-creativity-strong);
+  --area-soft: var(--area-creativity-soft);
+  --area-wash: var(--area-creativity-wash);
+  --area-border: var(--area-creativity-border);
+  --area-rgb: var(--area-creativity-rgb);
+}

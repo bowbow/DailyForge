@@ -9,10 +9,11 @@ the user take action without turning personal growth into a competitive game.
 
 The primary destinations are:
 
-1. **Today** — today's challenge and progress.
-2. **Wall** — completed actions and reflections.
-3. **History** — calendar, streaks, and completion summaries.
-4. **Settings** — challenge preferences, safety constraints, reminders, privacy,
+1. **Today** — today's challenges and progress.
+2. **Areas** — the goals, expected practices, and boundaries for each category.
+3. **Wall** — completed actions and reflections.
+4. **History** — calendar, streaks, and completion summaries.
+5. **Settings** — challenge preferences, safety constraints, reminders, privacy,
    export, and account management.
 
 On a phone these may use bottom navigation. On desktop they may use a side rail
@@ -20,7 +21,9 @@ or top navigation. The information hierarchy should remain the same.
 
 ## Today screen
 
-The challenge card should show:
+Today should normally show one independent challenge card for each category.
+The user may complete any number of them; completing every area is not a daily
+requirement. Each challenge card should show:
 
 - Category and optional practiced quality.
 - Clear action-oriented title.
@@ -31,6 +34,19 @@ The challenge card should show:
 - Accept, replace, or skip before work begins.
 
 After acceptance, the card exposes the appropriate tracker.
+
+The desktop rail may show short, static category summaries. The dedicated Areas
+destination is the single route to the full guides and must also be directly
+reachable on mobile. Each guide explains the area's purpose, the kinds of
+challenges to expect, examples, and important boundaries. In particular, Body
+focuses on mobility, useful strength, balance, and muscle retention for healthy
+ageing; it does not add aerobic work or modify the user's running plan.
+
+The Body guide also presents the draft B80 capability portfolio and explains
+the `B80 future goal → B60 reserve target → P60 baseline probe → daily
+progression` model. It must make clear that goals are personalized, probes are
+information rather than tests to fail, reserve assumptions are provisional,
+and safe repeatable progress takes priority over speed.
 
 ### Counter example
 
@@ -65,7 +81,7 @@ another person.
 
 ## Challenge states
 
-A daily challenge can be:
+Each daily challenge can be:
 
 - Proposed.
 - Accepted.
@@ -83,7 +99,8 @@ server has confirmed.
 Completion should be warm but restrained:
 
 - Confirm the concrete action completed.
-- Update the streak.
+- Update the day-based streak only when this is the first completion for that
+  local date, while always updating lifetime and category totals.
 - Add the entry to the wall.
 - Offer an optional reflection.
 - Avoid confetti overload, moral praise, or language implying superiority.
@@ -190,3 +207,19 @@ completion.
 - Do not encode categories by color alone.
 - Support zoom, text enlargement, reduced motion, and high contrast.
 - Make timers operable without precise pointer movement.
+
+## Area color language
+
+Each area has a consistent visual palette so it is recognizable across Today,
+Areas, the private Wall, and History:
+
+- Body: red-orange, suggesting grounded physical practice and energy.
+- Character: violet, suggesting reflection and judgment.
+- Community: green, suggesting connection, care, and mutual flourishing.
+- Creativity: blue, suggesting imagination, exploration, and open possibility.
+
+The canonical palette values live in `apps/web/src/area-theme.css`. Components
+must consume the shared `--area-*` custom properties rather than introducing
+new hard-coded category colors. Palette changes should therefore be possible in
+one file. Continue to show category names, meaningful text, and status symbols;
+color reinforces area identity but is never the only cue.

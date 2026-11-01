@@ -264,20 +264,24 @@ describe('streaks', () => {
       lifetimeCompletions: 0,
     };
     const first = advanceStreak(initial, '2026-10-30');
-    const replay = advanceStreak(first, '2026-10-30');
-    const consecutive = advanceStreak(replay, '2026-10-31');
+    const secondCompletionSameDay = advanceStreak(first, '2026-10-30');
+    const consecutive = advanceStreak(secondCompletionSameDay, '2026-10-31');
     const reset = advanceStreak(consecutive, '2026-11-02');
 
-    expect(replay).toEqual(first);
+    expect(secondCompletionSameDay).toMatchObject({
+      current: 1,
+      longest: 1,
+      lifetimeCompletions: 2,
+    });
     expect(consecutive).toMatchObject({
       current: 2,
       longest: 2,
-      lifetimeCompletions: 2,
+      lifetimeCompletions: 3,
     });
     expect(reset).toMatchObject({
       current: 1,
       longest: 2,
-      lifetimeCompletions: 3,
+      lifetimeCompletions: 4,
     });
   });
 });

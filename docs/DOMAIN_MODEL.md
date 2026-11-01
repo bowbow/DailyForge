@@ -2,8 +2,8 @@
 
 ## Overview
 
-The domain centers on a daily assignment, immutable progress events, completion,
-and a historical Wall of Goodness entry.
+The domain centers on daily assignments, immutable progress events,
+completions, and historical Wall of Goodness entries.
 
 ```text
 ChallengeDefinition
@@ -28,11 +28,14 @@ policies while preserving the broader model below:
 - `confirmation`: one durable self-attestation for a concrete action.
 - `timer`: positive duration increments toward a visible target.
 
-The current completion transaction derives a human-readable result, snapshots
-the challenge into one private wall entry, and advances the streak once. A
-proposal may be replaced or skipped before acceptance without a streak penalty. Narrative
-accounts, artifact attachments, reopened checklist items, durable persistence,
-and cross-device reconciliation remain future extensions.
+The development adapter creates one assignment per category. Each completion
+transaction derives a human-readable result and snapshots the challenge into
+one private wall entry. The day-based streak advances on the first completion
+for a local date; additional completions that day still increase lifetime and
+category totals. A proposal may be replaced or skipped before acceptance
+without a streak penalty. Narrative accounts, artifact attachments, reopened
+checklist items, durable persistence, and cross-device reconciliation remain
+future extensions.
 
 ## Core entities
 
@@ -84,7 +87,7 @@ The challenge offered to one user for one local date:
   applicable.
 - Replacement lineage.
 
-Only one active assignment should exist for a user and local date.
+At most one active assignment should exist for a user, local date, and category.
 
 ### ProgressEvent
 
@@ -171,15 +174,18 @@ Derived or transactionally maintained:
 
 ## Important invariants
 
-1. A user has at most one active daily assignment per local date.
+1. A user has at most one active daily assignment per local date and category.
 2. A progress-event ID is processed at most once.
 3. Progress belongs to exactly one assignment and its owner.
 4. A completed assignment cannot be completed again.
-5. A completion creates at most one wall entry and one streak transition.
+5. A completion creates at most one wall entry. The daily streak advances at
+   most once per local date, while each distinct completion contributes to
+   lifetime and category totals.
 6. Challenge-definition edits never rewrite historical assignments or wall
    entries.
 7. A skipped or expired assignment does not count as complete.
-8. Replacing a challenge cannot leave two simultaneously active assignments.
+8. Replacing a challenge stays within its category and cannot leave two
+   simultaneously active assignments for that category.
 9. Server authorization is checked by ownership, not merely by knowing an ID.
 10. Time-zone changes cannot award two completions for the same intended day.
 

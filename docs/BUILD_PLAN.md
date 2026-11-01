@@ -253,6 +253,8 @@ agent continues in order while verified, in-scope work remains.
 
 - Add curated fictional challenges across Body, Character, Community, and
   Creativity.
+- Present one independently actionable challenge per category and explain each
+  area's purpose and boundaries.
 - Add accept, replace, and skip.
 - Add optional completion reflection.
 - Add current, longest, and lifetime streak presentation.
