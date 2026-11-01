@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  creativeWorkStatusCommandSchema,
+  creativityChallengeContextSchema,
   completeChallengeCommandSchema,
   progressEventCommandSchema,
   trackingPolicySchema,
@@ -29,6 +31,27 @@ describe('progress event commands', () => {
         seconds: 0,
       }),
     ).toThrow();
+  });
+});
+
+describe('creativity program contracts', () => {
+  it('validates Studio Thinking metadata and bounded active-work status commands', () => {
+    expect(
+      creativityChallengeContextSchema.parse({
+        programVersion: '0.1',
+        goalIds: ['CG-01', 'CG-04'],
+        lane: 'project',
+        primaryHabit: 'express',
+        supportingHabits: ['envision'],
+        studioStructure: 'work',
+        reflectionPrompt: 'What creates the intended effect?',
+        activeWorkId: 'mountain-atmosphere-immensity',
+      }),
+    ).toMatchObject({ primaryHabit: 'express', goalIds: ['CG-01', 'CG-04'] });
+    expect(creativeWorkStatusCommandSchema.parse({ status: 'paused' })).toEqual({
+      status: 'paused',
+    });
+    expect(() => creativeWorkStatusCommandSchema.parse({ status: 'deleted' })).toThrow();
   });
 });
 

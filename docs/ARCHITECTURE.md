@@ -60,6 +60,8 @@ Use cases that coordinate domain objects and ports:
 - Complete a challenge.
 - Append a wall entry.
 - Query wall and history.
+- Update the user-controlled state of an active creative work independently of
+  challenge completion.
 - Schedule and send a reminder.
 - Search approved volunteer opportunities.
 

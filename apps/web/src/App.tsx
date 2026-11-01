@@ -6,7 +6,14 @@ import {
   type TodayChallengeResponse,
   type TodayResponse,
 } from '@daily-forge/contracts';
-import { challengeCategories, type ChallengeCategory } from '@daily-forge/domain';
+import {
+  challengeCategories,
+  type ChallengeCategory,
+  type CreativeWorkStatus,
+  type CreativityGoalId,
+  type StudioHabit,
+  type StudioStructure,
+} from '@daily-forge/domain';
 
 import {
   acceptToday,
@@ -20,6 +27,7 @@ import {
   loadWall,
   replaceToday,
   resetDevelopmentData,
+  setCreativeWorkStatus,
   skipToday,
 } from './api';
 
@@ -107,24 +115,29 @@ const areaGuides: Record<ChallengeCategory, AreaGuide> = {
     ],
   },
   creativity: {
-    short: 'Brief digital-art experiments, constraints, and tool discovery.',
-    goal: 'Develop an artistic practice through low-pressure experiments that build observation, fluency with digital tools, and creative courage.',
+    short:
+      'Atmospheric digital landscapes, Turner studies, sustained paintings, and protected play.',
+    goal: 'Create atmospheric, mountain-dominant digital landscapes with intentional warm and cool color relationships, learning from Turner while developing an individual visual voice.',
     focuses: [
-      'Short sketches with deliberate constraints',
-      'Learning one unfamiliar digital-art feature',
-      'Color, value, light, composition, and brush experiments',
-      'Reworking existing art to explore a different decision',
+      'Meaningful paintings that begin before technical mastery',
+      'Warm/cool color, value, atmosphere, edges, and mountain scale',
+      'Brief craft instruction applied immediately to active work',
+      'Private critique, revision, intentional finishing, and presentation',
+      'Optional Gaea → Unreal → Rebelle reference workflows',
     ],
     examples: [
-      'Make a ten-minute sketch with one brush and two colors',
-      'Build and save a three-color palette',
-      'Try one unfamiliar tool in an art application',
-      'Re-light an older drawing or reduce it to three values',
+      'Paint a 15-minute mountain-atmosphere baseline in Rebelle',
+      'Map warm, cool, and neutral regions in a Turner landscape',
+      'Apply one temperature or atmospheric decision to an active painting',
+      'Compare two versions and choose one useful next experiment',
+      'Invent impossible mountain weather as a disposable Spark',
     ],
     boundaries: [
-      'Experiments are practice, not tests of artistic worth',
+      'Studio habits interact; Develop Craft is not a prerequisite ladder',
+      'Gaea and Unreal serve paintings rather than becoming mastery goals',
+      'A 15-minute challenge can advance a larger work without finishing it',
       'Sharing artwork is never required as proof',
-      'Optional artifacts will remain private when added later',
+      'The user—not the app—decides whether work continues, pauses, or finishes',
     ],
   },
 };
@@ -345,6 +358,202 @@ function BodyResources() {
   );
 }
 
+interface CreativityGoal {
+  id: CreativityGoalId;
+  title: string;
+  description: string;
+}
+
+const creativityGoals: CreativityGoal[] = [
+  {
+    id: 'CG-01',
+    title: 'Make atmospheric mountain landscapes',
+    description:
+      'Use scale, depth, weather, light, and atmosphere as deliberate painting decisions.',
+  },
+  {
+    id: 'CG-02',
+    title: 'Use warm and cool relationships intentionally',
+    description: 'Organize temperature to support light, depth, unity, emphasis, and feeling.',
+  },
+  {
+    id: 'CG-03',
+    title: 'Learn from Turner and transfer the learning',
+    description:
+      'Study value, color, edges, atmosphere, and movement, then transform those ideas in original work.',
+  },
+  {
+    id: 'CG-04',
+    title: 'Sustain, revise, and finish selected paintings',
+    description:
+      'Keep meaningful work active and use private critique to choose its next honest state.',
+  },
+  {
+    id: 'CG-05',
+    title: 'Use the landscape pipeline when it serves the work',
+    description:
+      'Use Gaea and Unreal for terrain, viewpoint, and light before interpreting the reference in Rebelle.',
+  },
+  {
+    id: 'CG-06',
+    title: 'Preserve play and creative range',
+    description:
+      'Make low-stakes experiments where curiosity and discovery matter more than keeping the result.',
+  },
+];
+
+const studioCycle = [
+  {
+    marker: '01',
+    title: 'Meaningful question',
+    copy: 'Begin with an effect, feeling, or visual problem.',
+  },
+  { marker: '02', title: 'Sustained making', copy: 'Work on an actual painting or bounded study.' },
+  {
+    marker: '03',
+    title: 'Just-enough craft',
+    copy: 'Learn only what the current work needs, then apply it.',
+  },
+  {
+    marker: '04',
+    title: 'Private critique',
+    copy: 'Compare intention with visible effect and choose what comes next.',
+  },
+] as const;
+
+function labelStudioHabit(habit: StudioHabit): string {
+  const labels: Record<StudioHabit, string> = {
+    'develop-craft': 'Develop Craft',
+    'engage-and-persist': 'Engage & Persist',
+    envision: 'Envision',
+    express: 'Express',
+    observe: 'Observe',
+    reflect: 'Reflect',
+    'stretch-and-explore': 'Stretch & Explore',
+    'understand-art-worlds': 'Understand Art Worlds',
+  };
+  return labels[habit];
+}
+
+function labelStudioStructure(structure: StudioStructure): string {
+  const labels: Record<StudioStructure, string> = {
+    'brief-instruction': 'Brief instruction',
+    work: 'Studio work',
+    critique: 'Private critique',
+    exhibition: 'Presentation',
+  };
+  return labels[structure];
+}
+
+function CreativityProgramApproach({
+  program,
+  pending,
+  onStatus,
+}: {
+  program: TodayResponse['creativityProgram'];
+  pending: boolean;
+  onStatus: (status: CreativeWorkStatus) => Promise<void>;
+}) {
+  const { activeWork } = program;
+  return (
+    <section className="creativity-program" aria-labelledby="creativity-program-heading">
+      <div className="creativity-program__intro">
+        <p className="eyebrow">Major quest · Program {program.version}</p>
+        <h3 id="creativity-program-heading">Paint atmosphere, not software expertise.</h3>
+        <p>{program.majorQuest}</p>
+      </div>
+
+      <section className="active-work" aria-labelledby="active-work-heading">
+        <div>
+          <p className="eyebrow">Active studio work</p>
+          <h3 id="active-work-heading">{activeWork.title}</h3>
+          <p>{activeWork.inquiry}</p>
+        </div>
+        <span className={'work-status work-status--' + activeWork.status}>{activeWork.status}</span>
+        <div className="active-work__actions" aria-label="Set active work status">
+          {(['active', 'paused', 'finished'] as const).map((status) => (
+            <button
+              aria-pressed={activeWork.status === status}
+              className={
+                activeWork.status === status
+                  ? 'work-state-button work-state-button--active'
+                  : 'work-state-button'
+              }
+              disabled={pending || activeWork.status === status}
+              key={status}
+              onClick={() => void onStatus(status)}
+              type="button"
+            >
+              {status === 'active' ? 'Continue' : status === 'paused' ? 'Pause' : 'Finish'}
+            </button>
+          ))}
+        </div>
+        <small>Project state never changes the daily streak or erases prior work.</small>
+      </section>
+
+      <div className="creativity-program__copy">
+        <h3>Six goals that can develop together</h3>
+        <p>
+          These are not levels. A single painting may involve observation, craft, expression,
+          persistence, exploration, and reflection at the same time.
+        </p>
+      </div>
+
+      <ol className="creativity-goals">
+        {creativityGoals.map((goal) => (
+          <li key={goal.id}>
+            <span>{goal.id}</span>
+            <strong>{goal.title}</strong>
+            <p>{goal.description}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div className="creativity-program__copy">
+        <h3>A recursive studio cycle</h3>
+        <p>
+          Studio Thinking does not put Develop Craft first. Challenges respond to the work that is
+          in front of you, and a critique can send the cycle in any useful direction.
+        </p>
+      </div>
+
+      <ol className="studio-cycle" aria-label="Daily Forge creativity studio cycle">
+        {studioCycle.map((step) => (
+          <li key={step.marker}>
+            <span>{step.marker}</span>
+            <strong>{step.title}</strong>
+            <p>{step.copy}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div className="creativity-program__principles">
+        <section>
+          <h3>Fifteen-minute episodes</h3>
+          <p>
+            The timer is a boundary, not a productivity test. Larger paintings grow across connected
+            sessions; setup time counts.
+          </p>
+        </section>
+        <section>
+          <h3>Tools in service</h3>
+          <p>
+            Rebelle is the painting studio. Gaea and Unreal are optional ways to explore terrain,
+            viewpoint, light, and reference.
+          </p>
+        </section>
+        <section>
+          <h3>The artist decides</h3>
+          <p>
+            Continue, pause, deliberately abandon, or finish. The app records the decision without
+            assigning artistic worth.
+          </p>
+        </section>
+      </div>
+    </section>
+  );
+}
+
 function formatLocalDate(localDate: string): string {
   return new Intl.DateTimeFormat('en-US', {
     dateStyle: 'long',
@@ -516,6 +725,7 @@ function ProgressControls(props: ProgressControlsProps) {
 interface ChallengeCardProps extends ProgressControlsProps {
   slot: TodayChallengeResponse;
   streak: TodayResponse['streak'];
+  creativityProgram: TodayResponse['creativityProgram'];
   onAccept: () => Promise<void>;
   onReplace: () => Promise<void>;
   onSkip: () => Promise<void>;
@@ -526,6 +736,7 @@ interface ChallengeCardProps extends ProgressControlsProps {
 function ChallengeCard(props: ChallengeCardProps) {
   const { assignment, progress, replacementCount } = props.slot;
   const challenge = assignment.challenge;
+  const creativity = challenge.creativity;
   const [reflection, setReflection] = useState('');
   const ready = progressReady(progress);
   const categoryName = challenge.category.charAt(0).toUpperCase() + challenge.category.slice(1);
@@ -537,6 +748,15 @@ function ChallengeCard(props: ChallengeCardProps) {
         <span className="effort-label">About {challenge.expectedMinutes} minutes</span>
       </div>
 
+      {creativity && (
+        <div className="studio-context" aria-label="Creativity studio context">
+          <span>{creativity.lane}</span>
+          <span>{labelStudioHabit(creativity.primaryHabit)}</span>
+          <span>{labelStudioStructure(creativity.studioStructure)}</span>
+          <span>{creativity.goalIds.join(' · ')}</span>
+        </div>
+      )}
+
       <div>
         <p className="challenge-number">
           {assignment.status === 'proposed' && 'Available today'}
@@ -546,6 +766,12 @@ function ChallengeCard(props: ChallengeCardProps) {
         </p>
         <h2>{challenge.title}</h2>
         <p>{challenge.instructions}</p>
+        {creativity?.activeWorkId === props.creativityProgram.activeWork.id && (
+          <p className="active-work-reference">
+            For <strong>{props.creativityProgram.activeWork.title}</strong>
+            <span> · {props.creativityProgram.activeWork.status}</span>
+          </p>
+        )}
         {challenge.safetyNote && <p className="safety-note">{challenge.safetyNote}</p>}
       </div>
 
@@ -589,7 +815,9 @@ function ChallengeCard(props: ChallengeCardProps) {
             <textarea
               maxLength={1000}
               onChange={(event) => setReflection(event.target.value)}
-              placeholder="What did you do or notice? This stays private."
+              placeholder={
+                creativity?.reflectionPrompt ?? 'What did you do or notice? This stays private.'
+              }
               rows={3}
               value={reflection}
             />
@@ -691,6 +919,7 @@ function TodayView(props: TodayViewProps) {
           const assignmentId = slot.assignment.id;
           return (
             <ChallengeCard
+              creativityProgram={props.today.creativityProgram}
               key={assignmentId}
               onAccept={() => props.onAccept(assignmentId)}
               onAddCount={(amount) => props.onAddCount(assignmentId, amount)}
@@ -717,11 +946,17 @@ function TodayView(props: TodayViewProps) {
 
 function AreasView({
   selected,
+  creativityProgram,
+  creativityProgramPending,
   onSelect,
+  onCreativeWorkStatus,
   onViewToday,
 }: {
   selected: ChallengeCategory;
+  creativityProgram: TodayResponse['creativityProgram'];
+  creativityProgramPending: boolean;
   onSelect: (category: ChallengeCategory) => void;
+  onCreativeWorkStatus: (status: CreativeWorkStatus) => Promise<void>;
   onViewToday: () => void;
 }) {
   const guide = areaGuides[selected];
@@ -765,6 +1000,13 @@ function AreasView({
           <p>{guide.goal}</p>
         </section>
         {selected === 'body' && <BodyProgramApproach />}
+        {selected === 'creativity' && (
+          <CreativityProgramApproach
+            onStatus={onCreativeWorkStatus}
+            pending={creativityProgramPending}
+            program={creativityProgram}
+          />
+        )}
         <div className="area-detail__columns">
           <section>
             <h3>What challenges focus on</h3>
@@ -849,6 +1091,13 @@ function WallView({ entries }: { entries: GoodnessEntryResponse[] }) {
               <h2>{entry.challengeTitle}</h2>
               <p className="wall-result">{entry.result}</p>
               {entry.reflection && <blockquote>{entry.reflection}</blockquote>}
+              {entry.creativity && (
+                <p className="studio-history">
+                  Studio context: {labelStudioHabit(entry.creativity.primaryHabit)} ·{' '}
+                  {labelStudioStructure(entry.creativity.studioStructure)} ·{' '}
+                  {entry.creativity.goalIds.join(' · ')}
+                </p>
+              )}
               <p className="quality-line">Practiced: {entry.practicedQualities.join(', ')}</p>
             </article>
           ))}
@@ -1100,8 +1349,13 @@ export function App() {
               today={today}
             />
           )}
-          {!loading && view === 'areas' && (
+          {!loading && today && view === 'areas' && (
             <AreasView
+              creativityProgram={today.creativityProgram}
+              creativityProgramPending={pendingTarget === 'creative-work'}
+              onCreativeWorkStatus={(status) =>
+                runAction('creative-work', () => setCreativeWorkStatus(status))
+              }
               selected={selectedArea}
               onSelect={setSelectedArea}
               onViewToday={() => setView('today')}

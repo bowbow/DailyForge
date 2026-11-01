@@ -106,11 +106,27 @@ and integrated through provider adapters.
 
 Examples:
 
-- Make a five-minute digital sketch using only two brushes.
-- Learn and use one unfamiliar feature in an art application.
-- Build a palette from something observed today.
-- Rework an older drawing with a different light source.
-- Create an image using only three values.
+- Paint a 15-minute mountain-atmosphere baseline in Rebelle.
+- Map the largest warm, cool, and neutral regions in a Turner landscape.
+- Apply one temperature or atmospheric decision to an active painting.
+- Compare two versions and choose one useful next experiment.
+- Invent impossible mountain weather as a disposable experiment.
+
+The initial Creativity program is painting-first. Its major quest is to create
+atmospheric, mountain-dominant digital landscapes with intentional warm and cool
+relationships, learning from Turner while developing an individual voice.
+
+Creativity challenges use the eight non-hierarchical Studio Habits of Mind and
+the Studio Structures of brief instruction, sustained work, critique, and
+presentation. Develop Craft is embedded in meaningful work rather than treated
+as a prerequisite syllabus. Rebelle 7 Pro is the primary studio; Gaea and Unreal
+Engine are optional supporting tools for terrain, viewpoint, lighting, and
+reference. The default episode is 15 minutes, while a painting may continue
+across many episodes.
+
+The user controls the state of an active creative work: active, paused, or
+finished. Changing that project state is not a daily challenge completion and
+does not change streaks or remove prior work.
 
 ## Tracking modes
 

@@ -43,6 +43,8 @@ Instructions for coding agents are in [AGENTS.md](AGENTS.md).
 Supporting product research:
 
 - [Body challenge research for healthy ageing](docs/Body_research.md)
+- [Creativity challenge research and program framework](docs/Creativity_research.md)
+- [Creativity Program v0.1](docs/Creativity_program.md)
 
 ## Confirmed direction
 

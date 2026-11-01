@@ -11,6 +11,27 @@
   capabilities, strength, muscle power, balance, mobility, bone loading, safety
   tiers, age-80 outcomes, thirteen age-60 reserve targets, sixty-one linked
   baseline probes, and candidate challenge families.
+- Creativity-program research centered on the eight Studio Habits of Mind,
+  treated as a non-hierarchical primary framework; recurring studio cycles and
+  the four Studio Structures now connect Develop Craft to active and finished
+  paintings. The research also covers controllable Creative Endeavors,
+  protected play, Turner component and master studies using Rebelle 7 Pro,
+  unrestricted Gaea access, optional Gaea-to-Unreal reference workflows,
+  submission backcasting, baseline probes, challenge families, and just-enough
+  technical learning.
+- Creativity Program v0.1 translates that research into a painting-first major
+  quest, six controllable goals, a recursive active-work model, a proposed
+  starter cycle, 15-minute challenge rules, and an initial library spanning
+  Turner study, warm/cool craft, sustained painting, reflection, finishing,
+  protected play, and the Gaea-to-Unreal-to-Rebelle workflow.
+- The Creativity program is woven into the runnable app: the Area guide shows
+  the major quest, six goals, recursive Studio Thinking cycle, 15-minute model,
+  tool roles, and an active mountain-atmosphere work. Today cards and Wall
+  snapshots retain versioned lane, habit, Studio Structure, goal, reflection,
+  and active-work context.
+- The development catalog contains the eight reviewed starter-cycle Creativity
+  challenges. The active creative work can be continued, paused, or finished
+  independently of challenge completion and streak state.
 - pnpm workspace with web, API, domain, and contract packages.
 - React/Vite shell with Today, Areas, Wall, History, and Settings views.
 - Responsive desktop/sidebar and phone/bottom-navigation styles.
@@ -64,18 +85,21 @@
   domain tests, three API integration tests, and production web build.
 - Live browser verification completed the full accept, four-increment,
   completion, streak, and private-wall journey.
-- Playwright verifies the counter and checklist/reflection journeys in desktop
-  Chromium and a Pixel 6-sized mobile profile.
-- Sixteen Playwright cases cover four simultaneous category cards, seeded
-  history,
-  multi-completion streak behavior, category-scoped replacement, independent
-  skip, Areas content, install metadata, horizontal overflow, and automated
-  accessibility scans across desktop and Pixel 6 profiles.
+- Playwright verifies the counter, checklist/reflection, and Creativity studio
+  journeys in desktop Chromium and a Pixel 6-sized mobile profile.
+- Eighteen Playwright cases cover four simultaneous category cards, seeded
+  history, multi-completion streak behavior, category-scoped replacement,
+  independent skip, the expanded Areas content, active creative-work controls,
+  Creativity Wall metadata, install metadata, horizontal overflow, and
+  automated accessibility scans across desktop and Pixel 6 profiles.
 - The initial automated accessibility scan found muted text below WCAG AA
   contrast; the palette was corrected and the scan now reports no violations.
-- Seven contract, eight domain, and eight API integration tests cover validated
-  commands, same-day completion invariants, malformed input, wall filtering,
+- Eight contract, ten domain, and nine API integration tests cover validated
+  commands, same-day completion invariants, Creativity metadata snapshots,
+  independent active-work transitions, malformed input, wall filtering,
   category-scoped skip, and replacement behavior.
+- The complete `pnpm check` gate and all 18 desktop/Pixel Playwright cases pass
+  after the Creativity Program v0.1 implementation.
 
 ## Current assumptions
 
@@ -108,12 +132,15 @@ Later-phase blockers:
 
 ## Exact next action
 
-Prepare Milestone 2 only after the next authorization boundary:
+Complete the authorized Character-area research before returning to Milestone 2:
 
-1. Repair Docker Desktop's stale socket issue or approve an alternative local
-   PostgreSQL runtime.
-2. Select the database access and migration library.
-3. Implement durable PostgreSQL adapters behind the existing domain and API
-   contracts.
-4. Continue to leave authentication, offline mutation sync, Terraform apply,
-   and all AWS resource creation for separately reviewed stages.
+1. Identify a credible Stoic-skewed person, philosophy, or program that can
+   organize character practice as Attia and Studio Thinking organize other
+   areas.
+2. Document the evidence, limitations, goals, baseline probes, challenge
+   families, reflection model, and product safeguards in `Character_research.md`.
+3. Keep runtime behavior unchanged until the Character program is reviewed.
+
+Milestone 2 remains behind its existing authorization boundary and Docker or
+local PostgreSQL decision. Authentication, offline mutation sync, Terraform
+apply, and all AWS resource creation remain separately reviewed stages.

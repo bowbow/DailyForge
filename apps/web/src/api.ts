@@ -7,6 +7,7 @@ import {
   type TodayResponse,
   type WallResponse,
 } from '@daily-forge/contracts';
+import { type CreativeWorkStatus } from '@daily-forge/domain';
 
 type Parser<T> = {
   parse(value: unknown): T;
@@ -118,6 +119,13 @@ export function completeToday(assignmentId: string, reflection?: string): Promis
       }),
     },
   );
+}
+
+export function setCreativeWorkStatus(status: CreativeWorkStatus): Promise<TodayResponse> {
+  return request('/api/v1/creativity/active-work/status', todayResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify({ status }),
+  });
 }
 
 export function loadWall(category?: string, signal?: AbortSignal): Promise<WallResponse> {

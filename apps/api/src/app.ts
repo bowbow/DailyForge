@@ -4,6 +4,7 @@ import { ZodError } from 'zod';
 import {
   challengeCategorySchema,
   completeChallengeCommandSchema,
+  creativeWorkStatusCommandSchema,
   errorResponseSchema,
   healthResponseSchema,
   historyResponseSchema,
@@ -79,6 +80,11 @@ export function buildApp(options: BuildAppOptions = {}) {
       return todayResponseSchema.parse(store.complete(request.params.assignmentId, command));
     },
   );
+
+  app.post('/api/v1/creativity/active-work/status', (request) => {
+    const command = creativeWorkStatusCommandSchema.parse(request.body);
+    return todayResponseSchema.parse(store.setCreativeWorkStatus(command.status));
+  });
 
   app.get<{ Querystring: { category?: string } }>('/api/v1/wall', (request) => {
     const category = challengeCategorySchema.optional().parse(request.query.category);

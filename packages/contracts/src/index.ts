@@ -10,6 +10,68 @@ export type HealthResponse = z.infer<typeof healthResponseSchema>;
 
 export const challengeCategorySchema = z.enum(['body', 'character', 'community', 'creativity']);
 
+export const studioHabitSchema = z.enum([
+  'develop-craft',
+  'engage-and-persist',
+  'envision',
+  'express',
+  'observe',
+  'reflect',
+  'stretch-and-explore',
+  'understand-art-worlds',
+]);
+
+export const studioStructureSchema = z.enum([
+  'brief-instruction',
+  'work',
+  'critique',
+  'exhibition',
+]);
+
+export const creativityChallengeLaneSchema = z.enum([
+  'spark',
+  'practice',
+  'project',
+  'reflection',
+  'presentation',
+]);
+
+export const creativityGoalIdSchema = z.enum([
+  'CG-01',
+  'CG-02',
+  'CG-03',
+  'CG-04',
+  'CG-05',
+  'CG-06',
+]);
+
+export const creativityChallengeContextSchema = z.object({
+  programVersion: z.string().min(1),
+  goalIds: z.array(creativityGoalIdSchema).min(1),
+  lane: creativityChallengeLaneSchema,
+  primaryHabit: studioHabitSchema,
+  supportingHabits: z.array(studioHabitSchema),
+  studioStructure: studioStructureSchema,
+  reflectionPrompt: z.string().min(1).optional(),
+  activeWorkId: z.string().min(1).optional(),
+});
+
+export const creativeWorkStatusSchema = z.enum(['active', 'paused', 'finished']);
+
+export const creativeWorkSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  inquiry: z.string().min(1),
+  status: creativeWorkStatusSchema,
+  updatedAt: z.iso.datetime(),
+});
+
+export const creativityProgramStateSchema = z.object({
+  version: z.string().min(1),
+  majorQuest: z.string().min(1),
+  activeWork: creativeWorkSchema,
+});
+
 export const counterPolicySchema = z.object({
   kind: z.literal('counter'),
   target: z.number().int().positive(),
@@ -55,6 +117,7 @@ export const challengeDefinitionSchema = z.object({
   practicedQualities: z.array(z.string().min(1)),
   expectedMinutes: z.number().int().positive(),
   safetyNote: z.string().min(1).optional(),
+  creativity: creativityChallengeContextSchema.optional(),
   tracking: trackingPolicySchema,
 });
 
@@ -122,6 +185,11 @@ export const todayResponseSchema = z.object({
   development: z.literal(true),
   challenges: z.array(todayChallengeSchema).length(4),
   streak: streakStateSchema,
+  creativityProgram: creativityProgramStateSchema,
+});
+
+export const creativeWorkStatusCommandSchema = z.object({
+  status: creativeWorkStatusSchema,
 });
 
 const progressEventBase = {
@@ -175,6 +243,7 @@ export const goodnessEntrySchema = z.object({
   challengeInstructions: z.string().min(1),
   result: z.string().min(1),
   reflection: z.string().optional(),
+  creativity: creativityChallengeContextSchema.optional(),
 });
 
 export const wallResponseSchema = z.object({
@@ -204,6 +273,8 @@ export type TodayChallengeResponse = z.infer<typeof todayChallengeSchema>;
 export type ProgressEventCommand = z.infer<typeof progressEventCommandSchema>;
 export type ReplaceChallengeCommand = z.infer<typeof replaceChallengeCommandSchema>;
 export type CompleteChallengeCommand = z.infer<typeof completeChallengeCommandSchema>;
+export type CreativeWorkStatusCommand = z.infer<typeof creativeWorkStatusCommandSchema>;
+export type CreativityProgramStateResponse = z.infer<typeof creativityProgramStateSchema>;
 export type GoodnessEntryResponse = z.infer<typeof goodnessEntrySchema>;
 export type WallResponse = z.infer<typeof wallResponseSchema>;
 export type HistoryResponse = z.infer<typeof historyResponseSchema>;

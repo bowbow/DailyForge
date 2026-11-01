@@ -70,8 +70,25 @@ A reusable, versioned challenge template:
 - Consent or privacy note where relevant.
 - Eligibility rules.
 - Lifecycle status: draft, active, retired.
+- Optional Creativity program context: program version, goal IDs, challenge
+  lane, primary and supporting Studio Habits, Studio Structure, reflection
+  prompt, and related active-work ID.
 
 Editing a definition creates a new version for historical integrity.
+
+### CreativeWork
+
+A user-controlled creative project context:
+
+- Stable ID.
+- Title and artistic inquiry.
+- Status: active, paused, or finished.
+- Last-updated timestamp.
+
+Changing CreativeWork status is independent of daily challenge completion and
+streak state. The transition is deliberately reversible so a user can resume a
+paused or previously finished work without penalty. Challenge definitions may
+reference a work, but completing a challenge does not silently finish it.
 
 ### DailyAssignment
 
@@ -155,6 +172,7 @@ A private historical snapshot:
 - User's completion account or summarized measurable result.
 - Optional reflection.
 - Optional artifact references.
+- Optional Creativity program context snapshot.
 - Created and edited timestamps.
 - Highlight marker.
 
@@ -188,6 +206,8 @@ Derived or transactionally maintained:
    simultaneously active assignments for that category.
 9. Server authorization is checked by ownership, not merely by knowing an ID.
 10. Time-zone changes cannot award two completions for the same intended day.
+11. Changing active creative-work status cannot create a completion, wall entry,
+    or streak change.
 
 ## Local-day and time-zone policy
 

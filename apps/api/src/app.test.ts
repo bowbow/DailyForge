@@ -51,6 +51,57 @@ describe('health and daily assignments', () => {
       'creativity',
     ]);
     expect(today.challenges.every(({ assignment }) => assignment.status === 'proposed')).toBe(true);
+    expect(today.creativityProgram).toMatchObject({
+      version: '0.1',
+      activeWork: {
+        id: 'mountain-atmosphere-immensity',
+        status: 'active',
+      },
+    });
+    const creativity = today.challenges.find(
+      ({ assignment }) => assignment.challenge.category === 'creativity',
+    );
+    expect(creativity?.assignment.challenge).toMatchObject({
+      id: 'CR-P-001',
+      expectedMinutes: 15,
+      creativity: {
+        goalIds: ['CG-01', 'CG-04'],
+        primaryHabit: 'express',
+        studioStructure: 'work',
+      },
+    });
+  });
+
+  it('updates active creative work independently of streak and challenge completion', async () => {
+    const app = appForTest();
+    const pausedResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/creativity/active-work/status',
+      payload: { status: 'paused' },
+    });
+    const paused = todayResponseSchema.parse(pausedResponse.json());
+
+    expect(paused.creativityProgram.activeWork.status).toBe('paused');
+    expect(paused.streak).toMatchObject({ current: 0, lifetimeCompletions: 0 });
+    expect(paused.challenges.every(({ assignment }) => assignment.status === 'proposed')).toBe(
+      true,
+    );
+
+    const continuedResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/creativity/active-work/status',
+      payload: { status: 'active' },
+    });
+    expect(
+      todayResponseSchema.parse(continuedResponse.json()).creativityProgram.activeWork.status,
+    ).toBe('active');
+
+    const invalid = await app.inject({
+      method: 'POST',
+      url: '/api/v1/creativity/active-work/status',
+      payload: { status: 'discarded' },
+    });
+    expect(invalid.statusCode).toBe(400);
   });
 
   it('seeds believable development history without changing today’s assignments', async () => {

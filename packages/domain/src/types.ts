@@ -2,6 +2,66 @@ export const challengeCategories = ['body', 'character', 'community', 'creativit
 
 export type ChallengeCategory = (typeof challengeCategories)[number];
 
+export const studioHabits = [
+  'develop-craft',
+  'engage-and-persist',
+  'envision',
+  'express',
+  'observe',
+  'reflect',
+  'stretch-and-explore',
+  'understand-art-worlds',
+] as const;
+
+export type StudioHabit = (typeof studioHabits)[number];
+
+export const studioStructures = ['brief-instruction', 'work', 'critique', 'exhibition'] as const;
+
+export type StudioStructure = (typeof studioStructures)[number];
+
+export const creativityChallengeLanes = [
+  'spark',
+  'practice',
+  'project',
+  'reflection',
+  'presentation',
+] as const;
+
+export type CreativityChallengeLane = (typeof creativityChallengeLanes)[number];
+
+export const creativityGoalIds = ['CG-01', 'CG-02', 'CG-03', 'CG-04', 'CG-05', 'CG-06'] as const;
+
+export type CreativityGoalId = (typeof creativityGoalIds)[number];
+
+export interface CreativityChallengeContext {
+  programVersion: string;
+  goalIds: CreativityGoalId[];
+  lane: CreativityChallengeLane;
+  primaryHabit: StudioHabit;
+  supportingHabits: StudioHabit[];
+  studioStructure: StudioStructure;
+  reflectionPrompt?: string;
+  activeWorkId?: string;
+}
+
+export const creativeWorkStatuses = ['active', 'paused', 'finished'] as const;
+
+export type CreativeWorkStatus = (typeof creativeWorkStatuses)[number];
+
+export interface CreativeWork {
+  id: string;
+  title: string;
+  inquiry: string;
+  status: CreativeWorkStatus;
+  updatedAt: string;
+}
+
+export interface CreativityProgramState {
+  version: string;
+  majorQuest: string;
+  activeWork: CreativeWork;
+}
+
 export type AssignmentStatus = 'proposed' | 'accepted' | 'completed' | 'replaced' | 'skipped';
 
 export interface CounterPolicy {
@@ -44,6 +104,7 @@ export interface ChallengeDefinition {
   practicedQualities: string[];
   expectedMinutes: number;
   safetyNote?: string;
+  creativity?: CreativityChallengeContext;
   tracking: TrackingPolicy;
 }
 
@@ -125,6 +186,7 @@ export interface GoodnessEntry {
   challengeInstructions: string;
   result: string;
   reflection?: string;
+  creativity?: CreativityChallengeContext;
 }
 
 export interface StreakState {

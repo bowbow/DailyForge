@@ -48,6 +48,19 @@ progression` model. It must make clear that goals are personalized, probes are
 information rather than tests to fail, reserve assumptions are provisional,
 and safe repeatable progress takes priority over speed.
 
+The Creativity guide presents the atmospheric-landscape major quest, six
+program goals, the recursive Studio Thinking cycle, the 15-minute episode
+model, and the distinct roles of Rebelle, Gaea, and Unreal. It also shows the
+current active creative work and lets the user mark it active, paused, or
+finished without affecting streaks.
+
+Creativity challenge cards identify their lane, primary Studio Habit, Studio
+Structure, goal IDs, and related active work. These labels explain why the
+challenge was selected without turning the habits into levels or scores. A
+contextual private-reflection prompt may replace the generic reflection
+placeholder. Completed Creativity wall entries retain the program context that
+was presented with the challenge.
+
 ### Counter example
 
 ```text

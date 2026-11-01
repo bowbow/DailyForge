@@ -234,6 +234,15 @@ export function completeChallenge(input: CompleteChallengeInput): CompleteChalle
     challengeInstructions: assignment.challenge.instructions,
     result: completion.result,
     ...(input.reflection ? { reflection: input.reflection } : {}),
+    ...(assignment.challenge.creativity
+      ? {
+          creativity: {
+            ...assignment.challenge.creativity,
+            goalIds: [...assignment.challenge.creativity.goalIds],
+            supportingHabits: [...assignment.challenge.creativity.supportingHabits],
+          },
+        }
+      : {}),
   };
 
   return { assignment: completedAssignment, completion, wallEntry };

@@ -7,10 +7,13 @@ import {
   progressFor,
   recordProgressEvent,
   replaceAssignment,
+  setCreativeWorkStatus,
   skipAssignment,
   type ChallengeCategory,
   type ChallengeDefinition,
   type Completion,
+  type CreativeWorkStatus,
+  type CreativityProgramState,
   type DailyAssignment,
   type GoodnessEntry,
   type ProgressEvent,
@@ -122,31 +125,195 @@ export const developmentCatalog: ChallengeDefinition[] = [
     },
   },
   {
-    id: 'constraint-sketch',
+    id: 'CR-P-001',
     version: 1,
     category: 'creativity',
-    title: 'Make a ten-minute constraint sketch',
+    title: 'Paint a mountain-atmosphere baseline',
     instructions:
-      'Choose one brush and two colors. Explore an idea for ten minutes without judging or polishing the result.',
-    practicedQualities: ['curiosity', 'creative courage'],
-    expectedMinutes: 10,
-    tracking: { kind: 'timer', targetSeconds: 600, incrementsSeconds: [300, 600] },
+      'In Rebelle, paint a mountain landscape from memory whose intended feeling is immensity. Stop at 15 minutes and save it; setup time counts.',
+    practicedQualities: ['expression', 'atmosphere'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-01', 'CG-04'],
+      lane: 'project',
+      primaryHabit: 'express',
+      supportingHabits: ['envision', 'engage-and-persist'],
+      studioStructure: 'work',
+      reflectionPrompt: 'What currently creates immensity, and what weakens it?',
+      activeWorkId: 'mountain-atmosphere-immensity',
+    },
+    tracking: { kind: 'timer', targetSeconds: 900, incrementsSeconds: [300, 900] },
   },
   {
-    id: 'three-color-palette',
+    id: 'CR-R-001',
     version: 1,
     category: 'creativity',
-    title: 'Build a three-color digital palette',
+    title: 'Compare intention with effect',
     instructions:
-      'Choose a visual reference, identify three dominant colors, and save a small palette to use in future artwork.',
-    practicedQualities: ['observation', 'experimentation'],
-    expectedMinutes: 8,
+      'View the mountain baseline at thumbnail size. Work through the three prompts without changing the painting yet.',
+    practicedQualities: ['reflection', 'critical judgment'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-01', 'CG-04'],
+      lane: 'reflection',
+      primaryHabit: 'reflect',
+      supportingHabits: ['observe', 'envision'],
+      studioStructure: 'critique',
+      reflectionPrompt: 'Which single experiment would provide the most information?',
+      activeWorkId: 'mountain-atmosphere-immensity',
+    },
     tracking: {
       kind: 'checklist',
       items: [
-        { id: 'choose-reference', label: 'Choose a visual reference' },
-        { id: 'sample-colors', label: 'Select three useful colors' },
-        { id: 'save-palette', label: 'Save and name the palette' },
+        { id: 'intended-effect', label: 'Name the effect you intended' },
+        { id: 'supporting-choice', label: 'Identify one visible choice that supports it' },
+        { id: 'next-experiment', label: 'Choose one next experiment' },
+      ],
+    },
+  },
+  {
+    id: 'CR-P-002',
+    version: 1,
+    category: 'creativity',
+    title: 'Map Turner’s warm and cool structure',
+    instructions:
+      'Using one credited, legally usable Turner reference, make a simple map of its largest warm, cool, and neutral regions.',
+    practicedQualities: ['observation', 'warm-cool relationships'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-02', 'CG-03'],
+      lane: 'practice',
+      primaryHabit: 'observe',
+      supportingHabits: ['develop-craft', 'understand-art-worlds'],
+      studioStructure: 'work',
+      reflectionPrompt: 'Which temperature relationship does the most compositional work?',
+    },
+    tracking: {
+      kind: 'checklist',
+      items: [
+        { id: 'credit-source', label: 'Record the work, collection, and source link' },
+        { id: 'map-regions', label: 'Map the largest warm, cool, and neutral regions' },
+        { id: 'name-relationship', label: 'Name one important temperature relationship' },
+      ],
+    },
+  },
+  {
+    id: 'CR-P-003',
+    version: 1,
+    category: 'creativity',
+    title: 'Mix a warm-to-cool landscape family',
+    instructions:
+      'In Rebelle, mix a small color family for one sky and one mountain shadow, then apply two mixtures to a tiny test.',
+    practicedQualities: ['color mixing', 'craft'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-02'],
+      lane: 'practice',
+      primaryHabit: 'develop-craft',
+      supportingHabits: ['observe'],
+      studioStructure: 'brief-instruction',
+      reflectionPrompt: 'Which mixture moved the atmosphere in the intended direction?',
+    },
+    tracking: { kind: 'timer', targetSeconds: 900, incrementsSeconds: [300, 900] },
+  },
+  {
+    id: 'CR-J-001',
+    version: 1,
+    category: 'creativity',
+    title: 'Apply one temperature decision',
+    instructions:
+      'Reopen the mountain baseline and make only the warm/cool change selected during critique. Save a new version.',
+    practicedQualities: ['persistence', 'intentional revision'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-01', 'CG-02', 'CG-04'],
+      lane: 'project',
+      primaryHabit: 'engage-and-persist',
+      supportingHabits: ['develop-craft', 'reflect'],
+      studioStructure: 'work',
+      reflectionPrompt: 'Did the change clarify the intended atmosphere or reveal a tradeoff?',
+      activeWorkId: 'mountain-atmosphere-immensity',
+    },
+    tracking: { kind: 'timer', targetSeconds: 900, incrementsSeconds: [300, 900] },
+  },
+  {
+    id: 'CR-S-001',
+    version: 1,
+    category: 'creativity',
+    title: 'Invent impossible mountain weather',
+    instructions:
+      'Invent an impossible weather condition and make a disposable color-and-mark response. Plausibility and polish are not required.',
+    practicedQualities: ['play', 'creative courage'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-06'],
+      lane: 'spark',
+      primaryHabit: 'stretch-and-explore',
+      supportingHabits: ['express'],
+      studioStructure: 'work',
+      reflectionPrompt: 'What was fun, surprising, or worth stealing for another work?',
+    },
+    tracking: { kind: 'timer', targetSeconds: 900, incrementsSeconds: [300, 900] },
+  },
+  {
+    id: 'CR-R-002',
+    version: 1,
+    category: 'creativity',
+    title: 'Compare two versions without ranking them',
+    instructions:
+      'Compare the mountain baseline and its temperature revision. Describe what each does differently, then choose one idea to carry forward.',
+    practicedQualities: ['reflection', 'discernment'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-01', 'CG-02', 'CG-04'],
+      lane: 'reflection',
+      primaryHabit: 'reflect',
+      supportingHabits: ['observe', 'envision'],
+      studioStructure: 'critique',
+      reflectionPrompt: 'Which idea deserves another pass, and why?',
+      activeWorkId: 'mountain-atmosphere-immensity',
+    },
+    tracking: {
+      kind: 'checklist',
+      items: [
+        { id: 'first-version', label: 'Name what the first version does' },
+        { id: 'second-version', label: 'Name what the second version does' },
+        { id: 'carry-forward', label: 'Choose one idea to carry forward' },
+      ],
+    },
+  },
+  {
+    id: 'CR-J-002',
+    version: 1,
+    category: 'creativity',
+    title: 'Begin an intentional mountain landscape',
+    instructions:
+      'Make three tiny mountain thumbnails for a chosen feeling, select one, and state its intended effect before continuing.',
+    practicedQualities: ['envisioning', 'expression'],
+    expectedMinutes: 15,
+    creativity: {
+      programVersion: '0.1',
+      goalIds: ['CG-01', 'CG-04'],
+      lane: 'project',
+      primaryHabit: 'envision',
+      supportingHabits: ['express', 'engage-and-persist'],
+      studioStructure: 'work',
+      reflectionPrompt: 'Why does the selected thumbnail best support the intended feeling?',
+      activeWorkId: 'mountain-atmosphere-immensity',
+    },
+    tracking: {
+      kind: 'checklist',
+      items: [
+        { id: 'three-thumbnails', label: 'Make three tiny thumbnails' },
+        { id: 'select-one', label: 'Select one composition' },
+        { id: 'state-effect', label: 'State the intended effect' },
       ],
     },
   },
@@ -287,6 +454,7 @@ const developmentHistory: HistoricalSeed[] = [
 
 export class DevelopmentStore {
   private assignments: Record<ChallengeCategory, DailyAssignment>;
+  private creativityProgram: CreativityProgramState;
   private progressEvents: ProgressEvent[] = [];
   private completions: Completion[] = [];
   private wallEntries: GoodnessEntry[] = [];
@@ -298,6 +466,7 @@ export class DevelopmentStore {
     private readonly clock: Clock = () => new Date(),
     private readonly includeDemoHistory = true,
   ) {
+    this.creativityProgram = seedCreativityProgram(this.clock());
     this.assignments = this.seedAssignments();
     this.restoreDemoHistory();
   }
@@ -314,7 +483,20 @@ export class DevelopmentStore {
         };
       }),
       streak: structuredClone(this.streak),
+      creativityProgram: structuredClone(this.creativityProgram),
     };
+  }
+
+  setCreativeWorkStatus(status: CreativeWorkStatus): TodayResponse {
+    this.creativityProgram = {
+      ...this.creativityProgram,
+      activeWork: setCreativeWorkStatus(
+        this.creativityProgram.activeWork,
+        status,
+        this.clock().toISOString(),
+      ),
+    };
+    return this.getToday();
   }
 
   accept(assignmentId: string): TodayResponse {
@@ -406,6 +588,7 @@ export class DevelopmentStore {
   }
 
   reset(): TodayResponse {
+    this.creativityProgram = seedCreativityProgram(this.clock());
     this.assignments = this.seedAssignments();
     this.progressEvents = [];
     this.completions = [];
@@ -466,6 +649,21 @@ export class DevelopmentStore {
       challenge,
     };
   }
+}
+
+function seedCreativityProgram(now: Date): CreativityProgramState {
+  return {
+    version: '0.1',
+    majorQuest:
+      'Create atmospheric, mountain-dominant digital landscapes with intentional warm and cool color relationships, learning from Turner while developing an individual visual voice.',
+    activeWork: {
+      id: 'mountain-atmosphere-immensity',
+      title: 'Mountain atmosphere: immensity',
+      inquiry: 'How can a landscape painting make the viewer feel the immense scale of a mountain?',
+      status: 'active',
+      updatedAt: now.toISOString(),
+    },
+  };
 }
 
 function emptyCategoryCounts(): Record<ChallengeCategory, number> {

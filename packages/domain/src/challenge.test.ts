@@ -10,6 +10,7 @@ import {
   replaceAssignment,
   skipAssignment,
 } from './challenge';
+import { setCreativeWorkStatus } from './creativity';
 import {
   type ChallengeDefinition,
   type CountAddedEvent,
@@ -282,6 +283,80 @@ describe('streaks', () => {
       current: 1,
       longest: 2,
       lifetimeCompletions: 4,
+    });
+  });
+});
+
+describe('creativity program state', () => {
+  it('lets the user continue, pause, and finish active work without losing its identity', () => {
+    const work = {
+      id: 'mountain-atmosphere-immensity',
+      title: 'Mountain atmosphere: immensity',
+      inquiry: 'How can a painting make a mountain feel immense?',
+      status: 'active' as const,
+      updatedAt: '2026-10-30T17:00:00.000Z',
+    };
+    const paused = setCreativeWorkStatus(work, 'paused', '2026-10-30T18:00:00.000Z');
+    const finished = setCreativeWorkStatus(paused, 'finished', '2026-10-30T19:00:00.000Z');
+    const continued = setCreativeWorkStatus(finished, 'active', '2026-10-30T20:00:00.000Z');
+
+    expect(paused).toMatchObject({ id: work.id, status: 'paused' });
+    expect(finished).toMatchObject({ id: work.id, status: 'finished' });
+    expect(continued).toMatchObject({ id: work.id, status: 'active' });
+    expect(setCreativeWorkStatus(continued, 'active', '2026-10-30T21:00:00.000Z')).toBe(continued);
+  });
+
+  it('snapshots Studio Thinking context into a completed wall entry', () => {
+    const creativeAssignment: DailyAssignment = {
+      ...assignment,
+      id: 'creative-assignment',
+      status: 'accepted',
+      acceptedAt: '2026-10-30T17:00:00.000Z',
+      challenge: {
+        id: 'CR-P-001',
+        version: 1,
+        category: 'creativity',
+        title: 'Paint a mountain-atmosphere baseline',
+        instructions: 'Paint for fifteen minutes.',
+        practicedQualities: ['expression'],
+        expectedMinutes: 15,
+        creativity: {
+          programVersion: '0.1',
+          goalIds: ['CG-01'],
+          lane: 'project',
+          primaryHabit: 'express',
+          supportingHabits: ['envision'],
+          studioStructure: 'work',
+          activeWorkId: 'mountain-atmosphere-immensity',
+        },
+        tracking: {
+          kind: 'timer',
+          targetSeconds: 900,
+          incrementsSeconds: [300, 900],
+        },
+      },
+    };
+    const result = completeChallenge({
+      assignment: creativeAssignment,
+      events: [
+        {
+          id: 'creative-event',
+          assignmentId: creativeAssignment.id,
+          kind: 'time-added',
+          seconds: 900,
+          occurredAt: '2026-10-30T18:00:00.000Z',
+        },
+      ],
+      completionId: 'creative-completion',
+      wallEntryId: 'creative-wall',
+      completedAt: '2026-10-30T18:00:00.000Z',
+    });
+
+    expect(result.wallEntry.creativity).toMatchObject({
+      programVersion: '0.1',
+      goalIds: ['CG-01'],
+      primaryHabit: 'express',
+      studioStructure: 'work',
     });
   });
 });

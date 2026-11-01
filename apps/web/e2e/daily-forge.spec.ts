@@ -13,6 +13,13 @@ test('offers one challenge in each area', async ({ page }) => {
   await expect(page.locator('[data-category="community"]')).toBeVisible();
   await expect(page.locator('[data-category="creativity"]')).toBeVisible();
   await expect(page.getByText('0 of 4 completed')).toBeVisible();
+  const creativity = page.locator('.challenge-card[data-category="creativity"]');
+  await expect(
+    creativity.getByRole('heading', { name: 'Paint a mountain-atmosphere baseline' }),
+  ).toBeVisible();
+  await expect(creativity.getByText('Express', { exact: true })).toBeVisible();
+  await expect(creativity.getByText('Studio work', { exact: true })).toBeVisible();
+  await expect(creativity.getByText('CG-01 · CG-04', { exact: true })).toBeVisible();
 
   const areaAccents = await page
     .locator('.challenge-card[data-category]')
@@ -35,6 +42,22 @@ test('records a body challenge on the private wall', async ({ page }) => {
   await expect(body.getByText('3 days of deliberate action')).toBeVisible();
   await body.getByRole('button', { name: 'View your wall' }).click();
   await expect(page.getByText('20 push-ups', { exact: true })).toBeVisible();
+});
+
+test('records Creativity program context with a completed studio episode', async ({ page }) => {
+  const creativity = page.locator('.challenge-card[data-category="creativity"]');
+  await creativity.getByRole('button', { name: 'Accept this challenge' }).click();
+  await creativity.getByRole('button', { name: '+15 mins', exact: true }).click();
+  await creativity.getByRole('button', { name: 'Complete challenge' }).click();
+  await creativity.getByRole('button', { name: 'View your wall' }).click();
+
+  const entry = page.locator('.wall-card[data-category="creativity"]').first();
+  await expect(
+    entry.getByRole('heading', { name: 'Paint a mountain-atmosphere baseline' }),
+  ).toBeVisible();
+  await expect(
+    entry.getByText(/Studio context: Express · Studio work · CG-01 · CG-04/),
+  ).toBeVisible();
 });
 
 test('completes multiple categories while the daily streak advances once', async ({ page }) => {
@@ -126,9 +149,19 @@ test('explains the goals and boundaries of each area', async ({ page }) => {
 
   await page.getByRole('button', { name: 'creativity', exact: true }).click();
   await expect(
-    page.getByText(/Develop an artistic practice through low-pressure experiments/),
+    page.getByText(/Create atmospheric, mountain-dominant digital landscapes/).first(),
   ).toBeVisible();
   await expect(page.getByText(/Sharing artwork is never required as proof/)).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Paint atmosphere, not software expertise.' }),
+  ).toBeVisible();
+  await expect(page.getByText('CG-01', { exact: true })).toBeVisible();
+  await expect(page.getByText('CG-06', { exact: true })).toBeVisible();
+  await expect(page.getByText('Mountain atmosphere: immensity', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(page.locator('.work-status')).toHaveText('paused');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(page.locator('.work-status')).toHaveText('active');
   const creativityTheme = await page
     .locator('.area-detail')
     .evaluate((detail) => getComputedStyle(detail).getPropertyValue('--area-accent').trim());

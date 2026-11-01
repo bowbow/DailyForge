@@ -128,7 +128,8 @@ These require explicit decisions before their implementation phase:
 6. Grace-day or streak-freeze behavior.
 7. Behavior when a user deletes a wall entry.
 8. Time-zone change during an accepted challenge.
-9. Initial curated challenge library and review process.
+9. Review and publication process for expanding the initial curated challenge
+   library.
 10. Approved volunteer sources.
 11. Whether creative artifacts are uploaded or remain device-local.
 12. AWS account, region, domain, instance size, and backup retention.
