@@ -24,6 +24,15 @@
   starter cycle, 15-minute challenge rules, and an initial library spanning
   Turner study, warm/cool craft, sustained painting, reflection, finishing,
   protected play, and the Gaea-to-Unreal-to-Rebelle workflow.
+- Character-program research centered on Epictetus's three disciplines of
+  desire, action, and assent; balanced by the four Stoic virtues of practical
+  wisdom, justice, courage, and temperance; and informed by Stoic Week's
+  practice format. The research defines ten proposed capability goals,
+  thirty-six low-stakes baseline probes, eleven challenge families, a
+  twelve-episode starter sequence, deterministic selection and progression
+  rules, private reflection fields, and explicit safeguards against emotional
+  suppression, passivity, coerced confrontation, unsafe hardship, third-party
+  disclosure, and moral scoring.
 - The Creativity program is woven into the runnable app: the Area guide shows
   the major quest, six goals, recursive Studio Thinking cycle, 15-minute model,
   tool roles, and an active mountain-atmosphere work. Today cards and Wall
@@ -100,6 +109,10 @@
   category-scoped skip, and replacement behavior.
 - The complete `pnpm check` gate and all 18 desktop/Pixel Playwright cases pass
   after the Creativity Program v0.1 implementation.
+- Character research sources were checked against primary texts, scholarly
+  encyclopedia entries, Modern Stoicism program materials and reports, and
+  peer-reviewed research. Runtime behavior remains unchanged pending program
+  review.
 
 ## Current assumptions
 
@@ -132,14 +145,11 @@ Later-phase blockers:
 
 ## Exact next action
 
-Complete the authorized Character-area research before returning to Milestone 2:
-
-1. Identify a credible Stoic-skewed person, philosophy, or program that can
-   organize character practice as Attia and Studio Thinking organize other
-   areas.
-2. Document the evidence, limitations, goals, baseline probes, challenge
-   families, reflection model, and product safeguards in `Character_research.md`.
-3. Keep runtime behavior unchanged until the Character program is reviewed.
+Review `Character_research.md` and decide whether to turn it into Character
+Program v0.1. The proposed organizing framework is Epictetus's three
+disciplines, the four Stoic virtues, and a Stoic Week-inspired daily practice
+rhythm. Runtime behavior remains unchanged until the program and its initial
+goal/probe selection are approved.
 
 Milestone 2 remains behind its existing authorization boundary and Docker or
 local PostgreSQL decision. Authentication, offline mutation sync, Terraform
